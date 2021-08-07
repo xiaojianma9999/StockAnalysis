@@ -18,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.CookieManager;
+import android.webkit.ValueCallback;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
@@ -40,6 +41,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -86,7 +88,10 @@ public class MainActivity extends Activity {
     private volatile boolean hasHint = false;
 
     // 股票代码
-    private String stockNum;
+    private volatile String stockNum;
+
+    // 股票名称
+    private volatile String stockName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,12 +127,13 @@ public class MainActivity extends Activity {
         try {
             EditText stockNumText = findViewById(R.id.stock_num);
             stockNum = stockNumText.getText().toString().trim();
-            Log.e(TAG, "yejian downloadThreeTable stockNum is: " + stockNum);
+            Log.i(TAG, "yejian downloadThreeTable stockNum is: " + stockNum);
             if (TextUtils.isEmpty(stockNum)) {
                 Log.e(TAG, "yejian downloadThreeTable stockNum is empty");
                 Toast.makeText(MainActivity.this, R.string.stock_num_hint, Toast.LENGTH_SHORT).show();
                 return;
             }
+            mWebView.loadUrl("http://stockpage.10jqka.com.cn/" + stockNum);
 //            OKHttpUtil.asyncGet(mCookie, DEBT_URL + stockNum, getCallback());
 //            OKHttpUtil.asyncGet(mCookie, BENEFIT_URL + stockNum, getCallback());
 //            OKHttpUtil.asyncGet(mCookie, CASH_URL + stockNum, getCallback());
@@ -266,6 +272,11 @@ public class MainActivity extends Activity {
         return super.onKeyDown(keyCode, event);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mWebView.destroy();
+    }
 
     public void onClick(View view) {
         switch (view.getId()) {
@@ -290,6 +301,7 @@ public class MainActivity extends Activity {
             }
         }
 
+        @RequiresApi(api = Build.VERSION_CODES.N)
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
@@ -298,6 +310,21 @@ public class MainActivity extends Activity {
             mCookie = cookieManager.getCookie(url);
             Log.i(TAG, "yejian url: " + url);
             Log.i(TAG, "yejian cookieStr: " + mCookie);
+            if (stockNum == null || !url.contains(stockNum)) {
+                return;
+            }
+            mWebView.evaluateJavascript("document.title", value -> {
+                if (value != null) {
+                    int index = value.indexOf('(');
+                    Log.i(TAG, "yejian evaluateJavascript index: " + index);
+                    if (index != -1) {
+                        stockName = value.substring(0, index);
+                        stockName = stockName.replace("\"", "");
+                    }
+                }
+                Log.i(TAG, "yejian document.title: " + value);
+                Log.i(TAG, "yejian stockName: " + stockName);
+            });
         }
 
         @Override

@@ -20,11 +20,15 @@ import okio.Sink;
 /**
  * 文件下载工具类（单例模式）
  */
-public class DownloadUtil {
+public final class DownloadUtil {
 
     private static final String TAG = "DownloadUtil";
 
     private OkHttpClient okHttpClient;
+
+    private DownloadUtil() {
+
+    }
 
     public interface OnDownloadListener {
 
@@ -207,7 +211,6 @@ public class DownloadUtil {
                     e.printStackTrace();
                 }
             }
-
         }
     }
 }
