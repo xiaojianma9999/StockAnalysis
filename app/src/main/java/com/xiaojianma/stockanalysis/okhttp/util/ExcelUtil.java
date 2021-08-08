@@ -1,5 +1,7 @@
 package com.xiaojianma.stockanalysis.okhttp.util;
 
+import android.util.Log;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -15,13 +17,15 @@ import jxl.write.WritableWorkbook;
 
 public final class ExcelUtil {
 
+    private static final String TAG = "ExcelUtil";
+
     private ExcelUtil() {
 
     }
 
-    public static void readExcel(String path) {
+    public static void readExcel(File file) {
         try {
-            Workbook book = Workbook.getWorkbook(new File(path));
+            Workbook book = Workbook.getWorkbook(file);
             book.getNumberOfSheets();
             // 获得第一个工作表对象
             Sheet sheet = book.getSheet(0);
@@ -80,15 +84,15 @@ public final class ExcelUtil {
     /**
      * jxl暂时不提供修改已经存在的数据表,这里通过一个小办法来达到这个目的,不适合大型数据更新! 这里是通过覆盖原文件来更新的.
      *
-     * @param filePath
+     * @param file
      */
-    public void updateExcel(String filePath) {
+    public static void updateExcel(File file) {
         try {
-            Workbook rwb = Workbook.getWorkbook(new File(filePath));
+            Workbook rwb = Workbook.getWorkbook(file);
             WritableWorkbook wwb = Workbook.createWorkbook(new File(
-                    "d:/new.xls"), rwb);// copy
-            WritableSheet ws = wwb.getSheet(0);
-            WritableCell wc = ws.getWritableCell(0, 0);
+                    file.getParentFile(), "newFile.xls"), rwb);// copy
+            WritableSheet ws = wwb.getSheet(1);
+            WritableCell wc = ws.getWritableCell(0, 1);
             // 判断单元格的类型,做出相应的转换
             Label label = (Label) wc;
             label.setString("The value has been modified");
@@ -96,7 +100,7 @@ public final class ExcelUtil {
             wwb.close();
             rwb.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "yejian updateExcel excel exception: " + e.toString());
         }
     }
 

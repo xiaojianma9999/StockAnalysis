@@ -1,15 +1,25 @@
 package com.xiaojianma.stockanalysis.okhttp.util;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
+import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.core.content.FileProvider;
 
+import com.xiaojianma.stockanalysis.MainActivity;
+
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 
 public final class FileUtil {
+
+    private static final String TAG = "FileUtil";
 
     private FileUtil() {
 
@@ -134,5 +144,52 @@ public final class FileUtil {
                 type = MIME_MapTable[i][1];
         }
         return type;
+    }
+
+    public static boolean hasAnalysis(String stockNum) {
+        String basePath = getBasePath(stockNum);
+        File debtFile = getDebtFile(basePath);
+        File benefitFile = getBenefitFile(basePath);
+        File cashFile = getCashFile(basePath);
+        File analysis = getAnalysisFile(basePath);
+        return debtFile.exists() && benefitFile.exists() && cashFile.exists() && analysis.exists();
+    }
+
+    public static String getBasePath(String stockNum) {
+        // 储存下载文件的sdcard目录
+        File storageDir = Environment.getExternalStorageDirectory();
+        if (TextUtils.isEmpty(stockNum)) {
+            return storageDir + File.separator + "weimiao_learn";
+        }
+        return storageDir + File.separator + "weimiao_learn" + File.separator + stockNum + File.separator + stockNum;
+    }
+
+    public static  File getAnalysisFile(String basePath) {
+        return new File(basePath + "_18步分析.xlsx");
+    }
+
+    public static  File getDebtFile(String basePath) {
+        return new File(basePath + "_debt_year.xls");
+    }
+
+    public static File getBenefitFile(String basePath) {
+        return new File(basePath + "_benefit_year.xls");
+    }
+
+    public static File getCashFile(String basePath) {
+        return new File(basePath + "_cash_year.xls");
+    }
+
+    public static void copy(String srcfilePath, File analysisFile, Context context) {
+        try (InputStream input = context.getAssets().open(srcfilePath);
+             FileOutputStream output = new FileOutputStream(analysisFile);) {
+            byte[] bytes = new byte[4096];
+            int len;
+            while ((len = input.read(bytes)) != -1) {
+                output.write(bytes, 0, len);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "yejian generate analysis file exception: " + e.toString());
+        }
     }
 }

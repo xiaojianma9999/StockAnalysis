@@ -1,11 +1,12 @@
 <resources>
     <string name="app_name">StockAnalysis</string>
-    <string name="下载年报">下载年报</string>
     <string name="debet_success">%1$s下载成功</string>
     <string name="debet_fail">%1$s下载失败</string>
-    <string name="eighteen_step_analysis">十八步分析法</string>
+    <string name="eighteen_step_analysis">18步分析法</string>
     <string name="stock_num_description">请输入需要分析的股票代码</string>
     <string name="stock_num_hint">股票代码不能为空，请输入需要分析的股票代码之后再试！！！</string>
     <string name="stock_num_hint_need_correct">您输入的股票代码有误，请输入正确的股票代码之后再试！！！</string>
     <string name="start_analysis">开始分析</string>
+    <string name="view_case_mind_map">2.0课程-案例指导及科目思维导图（11-15）</string>
+    <string name="view_debt_seven_step">第五周-资产负债表分析7部法-爱问财</string>
 </resources>

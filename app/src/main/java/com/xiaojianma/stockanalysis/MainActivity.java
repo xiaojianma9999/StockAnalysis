@@ -18,7 +18,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.CookieManager;
-import android.webkit.ValueCallback;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
@@ -34,17 +33,12 @@ import com.xiaojianma.stockanalysis.okhttp.util.PermissionUtil;
 import com.xiaojianma.stockanalysis.okhttp.util.TaskUtil;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
-
-import javax.net.ssl.HttpsURLConnection;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -110,9 +104,35 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onMenuItemSelected(final int featureId, @NonNull MenuItem item) {
+        String srcFileName;
+        String dstFilePath;
+        String basePath = FileUtil.getBasePath("");
+        File baseFile = new File(basePath);
+        if (!baseFile.exists()) {
+            baseFile.mkdirs();
+        }
+        File dstFile;
         switch (item.getItemId()) {
-            case R.id.get_year_report:
+            case R.id.eighteen_step_analysis:
                 downloadThreeTable();
+                break;
+            case R.id.view_debt_seven_step:
+                dstFilePath = basePath + File.separator + "资产负债表分析7部法.xlsx";
+                dstFile = new File(dstFilePath);
+                srcFileName = "第五周-资产负债表分析7部法-爱问财.xlsx";
+                if (!dstFile.exists()) {
+                    FileUtil.copy(srcFileName, dstFile, this);
+                }
+                FileUtil.openFile(dstFile, this);
+                break;
+            case R.id.view_case_mind_map:
+                dstFilePath = basePath + File.separator + "案例指导及科目思维导图.xlsx";
+                dstFile = new File(dstFilePath);
+                srcFileName = "2.0课程-案例指导及科目思维导图（11-15）.xlsx";
+                if (!dstFile.exists()) {
+                    FileUtil.copy(srcFileName, dstFile, this);
+                }
+                FileUtil.openFile(dstFile, this);
                 break;
             default:
                 break;
@@ -133,10 +153,16 @@ public class MainActivity extends Activity {
                 Toast.makeText(MainActivity.this, R.string.stock_num_hint, Toast.LENGTH_SHORT).show();
                 return;
             }
+            if (FileUtil.hasAnalysis(stockNum)) {
+                Log.i(TAG, "yejian " + stockNum + "hasAnalysis open directly");
+                // 已经分析过了，直接打开
+                FileUtil.openFile(FileUtil.getAnalysisFile(FileUtil.getBasePath(stockNum)), MainActivity.this);
+                return;
+            }
             mWebView.loadUrl("http://stockpage.10jqka.com.cn/" + stockNum);
-//            OKHttpUtil.asyncGet(mCookie, DEBT_URL + stockNum, getCallback());
-//            OKHttpUtil.asyncGet(mCookie, BENEFIT_URL + stockNum, getCallback());
-//            OKHttpUtil.asyncGet(mCookie, CASH_URL + stockNum, getCallback());
+            OKHttpUtil.asyncGet(mCookie, DEBT_URL + stockNum, getCallback());
+            OKHttpUtil.asyncGet(mCookie, BENEFIT_URL + stockNum, getCallback());
+            OKHttpUtil.asyncGet(mCookie, CASH_URL + stockNum, getCallback());
         } catch (Exception e) {
             Log.e(TAG, "yejian downloadThreeTable exception: " + e.toString());
             hintNumError();
@@ -144,15 +170,17 @@ public class MainActivity extends Activity {
         TaskUtil.execute(new Runnable() {
             @Override
             public void run() {
-//                try {
-//                    countDownLatch.await();
-//                } catch (InterruptedException e) {
-//                    Log.e(TAG, "yejian await read excel exception: " + e.toString());
-//                }
-                // 储存下载文件的目录
-                File storageDir = Environment.getExternalStorageDirectory();
-                String path = storageDir + File.separator + "weimiao_learn" + File.separator + stockNum + "_debt_year.xls";
-                ExcelUtil.readExcel(path);
+                try {
+                    countDownLatch.await();
+                } catch (InterruptedException e) {
+                    Log.e(TAG, "yejian await read excel exception: " + e.toString());
+                }
+                File analysisFile = FileUtil.getAnalysisFile(FileUtil.getBasePath(stockNum));
+                FileUtil.copy("18步数据汇总工具及异常项自动计算方法增加2020年数据.xlsx", analysisFile, MainActivity.this);
+                ExcelUtil.updateExcel(analysisFile);
+                ExcelUtil.readExcel(FileUtil.getDebtFile(FileUtil.getBasePath(stockNum)));
+                ExcelUtil.readExcel(FileUtil.getBenefitFile(FileUtil.getBasePath(stockNum)));
+                ExcelUtil.readExcel(FileUtil.getCashFile(FileUtil.getBasePath(stockNum)));
             }
         });
         // 打开下载之后的文件
@@ -182,7 +210,7 @@ public class MainActivity extends Activity {
                 // 储存下载文件的目录
                 File storageDir = Environment.getExternalStorageDirectory();
                 Log.i(TAG, "yejian storageDir: " + storageDir.getAbsolutePath());
-                File dir = new File(storageDir + File.separator + "weimiao_learn");
+                File dir = new File(storageDir + File.separator + "weimiao_learn" + File.separator + stockNum);
                 // 如果目录不存在则创建目录
                 if (!dir.exists()) {
                     boolean mkdirs = dir.mkdirs();
