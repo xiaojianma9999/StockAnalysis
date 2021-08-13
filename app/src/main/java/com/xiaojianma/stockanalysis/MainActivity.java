@@ -179,7 +179,7 @@ public class MainActivity extends Activity {
                 } catch (InterruptedException e) {
                     Log.e(TAG, "yejian await read excel exception: " + e.toString());
                 }
-                File analysisFile = FileUtil.getAnalysisFile(FileUtil.getBasePath(stockNum) + "_" + stockName);
+                File analysisFile = FileUtil.getAnalysisFile(FileUtil.getBasePath(stockNum));
                 FileUtil.copy("18步数据汇总工具及异常项自动计算方法增加2020年数据.xls", analysisFile, MainActivity.this);
                 String basePath = FileUtil.getBasePath(stockNum);
                 ExcelUtil.updateExcel(analysisFile, FileUtil.getDebtFile(basePath), FileUtil.getBenefitFile(basePath), FileUtil.getCashFile(basePath));
@@ -188,11 +188,12 @@ public class MainActivity extends Activity {
                 } catch (InterruptedException e) {
                     Log.e(TAG, "yejian sleep exception: " + e.toString());
                 }
-//                FileUtil.openFile(analysisFile, MainActivity.this);
-                Intent intent = new Intent();
-                intent.setComponent(new ComponentName("com.huawei.filemanager", "com.huawei.hidisk.view.activity.category.StorageActivity"));
-                intent.putExtra("curr_dir", analysisFile.getParent());
-                startActivity(intent);
+                FileUtil.openFile(analysisFile, MainActivity.this);
+//                FileUtil.openAssignFolder(analysisFile.getParentFile(), MainActivity.this);
+//                Intent intent = new Intent();
+//                intent.setComponent(new ComponentName("com.huawei.filemanager", "com.huawei.hidisk.view.activity.category.StorageActivity"));
+//                intent.putExtra("curr_dir", analysisFile.getParent());
+//                startActivity(intent);
 //                ExcelUtil.readExcel(analysisFile);
 //                ExcelUtil.readExcel(FileUtil.getDebtFile(FileUtil.getBasePath(stockNum)));
 //                ExcelUtil.readExcel(FileUtil.getBenefitFile(FileUtil.getBasePath(stockNum)));

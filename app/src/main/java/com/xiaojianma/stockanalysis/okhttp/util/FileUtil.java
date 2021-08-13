@@ -203,7 +203,7 @@ public final class FileUtil {
             activity.startActivity(intent);
 //            startActivity(Intent.createChooser(intent,"选择浏览工具"));
         } catch (ActivityNotFoundException e) {
-            e.printStackTrace();
+            Log.e(TAG, "yejian openAssignFolder exception: " + e.toString());
         }
     }
 }
