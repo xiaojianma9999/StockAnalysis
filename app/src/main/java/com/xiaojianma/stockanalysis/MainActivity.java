@@ -268,7 +268,7 @@ public class MainActivity extends Activity {
                         }
                     });
                 }
-                forceStopApp(MainActivity.this, WPS_PKG);
+//                (MainActivity.this, WPS_PKG);
                 countDownLatch.countDown();
             }
         };
@@ -379,14 +379,14 @@ public class MainActivity extends Activity {
         }
     }
 
-    // 传入应用的包名即可kill掉应用
-    private void forceStopApp(Context context, String packageName) {
-        ActivityManager am = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
-        try {
-            Method method = Class.forName("android.app.ActivityManager").getMethod("forceStopPackage", String.class);
-            method.invoke(am, packageName);
-        } catch (Exception e) {
-            Log.e(TAG, "yejian forceStopApp: " + e.toString());
-        }
-    }
+//    // 传入应用的包名即可kill掉应用
+//    private void forceStopApp(Context context, String packageName) {
+//        ActivityManager am = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
+//        try {
+//            Method method = Class.forName("android.app.ActivityManager").getMethod("forceStopPackage", String.class);
+//            method.invoke(am, packageName);
+//        } catch (Exception e) {
+//            Log.e(TAG, "yejian forceStopApp: " + e.toString());
+//        }
+//    }
 }
