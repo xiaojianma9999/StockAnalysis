@@ -1,6 +1,7 @@
 package com.xiaojianma.stockanalysis.okhttp.util;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -164,11 +165,11 @@ public final class FileUtil {
         return storageDir + File.separator + "weimiao_learn" + File.separator + stockNum + File.separator + stockNum;
     }
 
-    public static  File getAnalysisFile(String basePath) {
+    public static File getAnalysisFile(String basePath) {
         return new File(basePath + "_18步分析.xlsx");
     }
 
-    public static  File getDebtFile(String basePath) {
+    public static File getDebtFile(String basePath) {
         return new File(basePath + "_debt_year.xls");
     }
 
@@ -190,6 +191,19 @@ public final class FileUtil {
             }
         } catch (Exception e) {
             Log.e(TAG, "yejian generate analysis file exception: " + e.toString());
+        }
+    }
+
+    public static void openAssignFolder(File file, Activity activity) {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setDataAndType(Uri.fromFile(file), "file/*");
+        try {
+            activity.startActivity(intent);
+//            startActivity(Intent.createChooser(intent,"选择浏览工具"));
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
         }
     }
 }

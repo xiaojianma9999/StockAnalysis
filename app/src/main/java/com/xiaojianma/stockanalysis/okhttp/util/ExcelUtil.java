@@ -1,19 +1,20 @@
 package com.xiaojianma.stockanalysis.okhttp.util;
 
+import android.os.Handler;
 import android.util.Log;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
+import jxl.format.CellFormat;
 import jxl.write.Label;
 import jxl.write.WritableCell;
 import jxl.write.WritableImage;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
 
 public final class ExcelUtil {
 
@@ -28,7 +29,7 @@ public final class ExcelUtil {
             Workbook book = Workbook.getWorkbook(file);
             book.getNumberOfSheets();
             // 获得第一个工作表对象
-            Sheet sheet = book.getSheet(0);
+            Sheet sheet = book.getSheet(1);
             int Rows = sheet.getRows();
             int Cols = sheet.getColumns();
             System.out.println("当前工作表的名字:" + sheet.getName());
@@ -84,24 +85,85 @@ public final class ExcelUtil {
     /**
      * jxl暂时不提供修改已经存在的数据表,这里通过一个小办法来达到这个目的,不适合大型数据更新! 这里是通过覆盖原文件来更新的.
      *
-     * @param file
+     * @param file        需要更新excel表格文件
+     * @param debtFile    资产负债表excel表格文件
+     * @param benefitFile 利润表excel表格文件
+     * @param cashFile    现金流量表excel表格文件
      */
-    public static void updateExcel(File file) {
+    public static void updateExcel(File file, File debtFile, File benefitFile, File cashFile) {
+        Workbook rwb = null;
+        WritableWorkbook wwb = null;
+        File dstFile = new File(file.getParentFile(), "newFile.xls");
         try {
-            Workbook rwb = Workbook.getWorkbook(file);
-            WritableWorkbook wwb = Workbook.createWorkbook(new File(
-                    file.getParentFile(), "newFile.xls"), rwb);// copy
-            WritableSheet ws = wwb.getSheet(1);
-            WritableCell wc = ws.getWritableCell(0, 1);
-            // 判断单元格的类型,做出相应的转换
-            Label label = (Label) wc;
-            label.setString("The value has been modified");
+            rwb = Workbook.getWorkbook(file);
+            wwb = Workbook.createWorkbook(dstFile, rwb);// copy
+            WritableSheet srcSheet = wwb.getSheet(1);
+            int srcRows = 1;
+            srcRows = updateDebtData(debtFile, srcSheet, srcRows);
+            srcRows = updateDebtData(benefitFile, srcSheet, srcRows);
+            updateDebtData(cashFile, srcSheet, srcRows);
             wwb.write();
-            wwb.close();
-            rwb.close();
         } catch (Exception e) {
             Log.e(TAG, "yejian updateExcel excel exception: " + e.toString());
+        } finally {
+            try {
+                if (wwb != null) {
+                    wwb.close();
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "yejian updateExcel excel wwb.close() exception: " + e.toString());
+            }
+            try {
+                if (rwb != null) {
+                    rwb.close();
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "yejian updateExcel excel rwb.close() exception: " + e.toString());
+            }
+            dstFile.renameTo(file);
         }
+    }
+
+    private static int updateDebtData(File updateFile, WritableSheet srcSheet, int srcRows) {
+        WritableCell cell;
+        Workbook debtBook = null;
+        try {
+            debtBook = Workbook.getWorkbook(updateFile);
+        } catch (Exception e) {
+            Log.e(TAG, "yejian updateDebtData exception: " + e.toString() + ", file is: " + updateFile.getAbsolutePath());
+        }
+        Sheet sheet = debtBook.getSheet(0);
+        int rows = srcRows;
+        for (int col = 0; col < sheet.getColumns() - 1; col++) {
+            rows = srcRows;
+            for (int row = 1; row < sheet.getRows() - 1; row++) {
+                String contents = sheet.getCell(col, row).getContents().trim();
+//                if (row == srcRows && (contents == null || "".equals(contents))) {
+//                    // 如果该行内容为空，直接跳过改行
+//                    continue;
+//                }
+                cell = srcSheet.getWritableCell(col, rows++);
+                if (cell == null) {
+                    continue;
+                }
+                CellFormat format = cell.getCellFormat();
+                Label label = new Label(col, rows - 1, contents);
+                if (format != null) {
+                    label.setCellFormat(format);
+                }
+                if (label != null) {
+                    try {
+                        srcSheet.addCell(label);
+                    } catch (WriteException e) {
+                        Log.e(TAG, "yejian updateDebtData addCell exception: " + e.toString() + ", file is: " + updateFile.getAbsolutePath());
+                    }
+                }
+            }
+        }
+        if (debtBook != null) {
+            debtBook.close();
+        }
+        return rows;
     }
 
     public static void writeExcel(String filePath) {

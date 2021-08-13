@@ -5,12 +5,16 @@ import androidx.annotation.RequiresApi;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -76,7 +80,7 @@ public class MainActivity extends Activity {
     private String mCookie;
 
     // 等待三张表都
-    private CountDownLatch countDownLatch;
+    private volatile CountDownLatch countDownLatch;
 
     // 是否已经提示过股票代码有误
     private volatile boolean hasHint = false;
@@ -143,7 +147,7 @@ public class MainActivity extends Activity {
 
     private void downloadThreeTable() {
         hasHint = false;
-        countDownLatch = new CountDownLatch(3);
+        countDownLatch = new CountDownLatch(4);
         try {
             EditText stockNumText = findViewById(R.id.stock_num);
             stockNum = stockNumText.getText().toString().trim();
@@ -175,12 +179,24 @@ public class MainActivity extends Activity {
                 } catch (InterruptedException e) {
                     Log.e(TAG, "yejian await read excel exception: " + e.toString());
                 }
-                File analysisFile = FileUtil.getAnalysisFile(FileUtil.getBasePath(stockNum));
-                FileUtil.copy("18步数据汇总工具及异常项自动计算方法增加2020年数据.xlsx", analysisFile, MainActivity.this);
-                ExcelUtil.updateExcel(analysisFile);
-                ExcelUtil.readExcel(FileUtil.getDebtFile(FileUtil.getBasePath(stockNum)));
-                ExcelUtil.readExcel(FileUtil.getBenefitFile(FileUtil.getBasePath(stockNum)));
-                ExcelUtil.readExcel(FileUtil.getCashFile(FileUtil.getBasePath(stockNum)));
+                File analysisFile = FileUtil.getAnalysisFile(FileUtil.getBasePath(stockNum) + "_" + stockName);
+                FileUtil.copy("18步数据汇总工具及异常项自动计算方法增加2020年数据.xls", analysisFile, MainActivity.this);
+                String basePath = FileUtil.getBasePath(stockNum);
+                ExcelUtil.updateExcel(analysisFile, FileUtil.getDebtFile(basePath), FileUtil.getBenefitFile(basePath), FileUtil.getCashFile(basePath));
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    Log.e(TAG, "yejian sleep exception: " + e.toString());
+                }
+//                FileUtil.openFile(analysisFile, MainActivity.this);
+                Intent intent = new Intent();
+                intent.setComponent(new ComponentName("com.huawei.filemanager", "com.huawei.hidisk.view.activity.category.StorageActivity"));
+                intent.putExtra("curr_dir", analysisFile.getParent());
+                startActivity(intent);
+//                ExcelUtil.readExcel(analysisFile);
+//                ExcelUtil.readExcel(FileUtil.getDebtFile(FileUtil.getBasePath(stockNum)));
+//                ExcelUtil.readExcel(FileUtil.getBenefitFile(FileUtil.getBasePath(stockNum)));
+//                ExcelUtil.readExcel(FileUtil.getCashFile(FileUtil.getBasePath(stockNum)));
             }
         });
         // 打开下载之后的文件
@@ -352,6 +368,7 @@ public class MainActivity extends Activity {
                 }
                 Log.i(TAG, "yejian document.title: " + value);
                 Log.i(TAG, "yejian stockName: " + stockName);
+                countDownLatch.countDown();
             });
         }
 
