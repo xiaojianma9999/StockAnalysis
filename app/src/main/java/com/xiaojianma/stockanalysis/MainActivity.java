@@ -1,19 +1,15 @@
 package com.xiaojianma.stockanalysis;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-
 import android.app.Activity;
-import android.app.ActivityManager;
-import android.content.ComponentName;
-import android.content.Context;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
@@ -27,8 +23,13 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import com.xiaojianma.stockanalysis.okhttp.util.ExcelUtil;
 import com.xiaojianma.stockanalysis.okhttp.util.FileUtil;
@@ -37,11 +38,10 @@ import com.xiaojianma.stockanalysis.okhttp.util.PermissionUtil;
 import com.xiaojianma.stockanalysis.okhttp.util.TaskUtil;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
 import okhttp3.Call;
@@ -90,6 +90,16 @@ public class MainActivity extends Activity {
 
     // 股票名称
     private volatile String stockName;
+
+    private volatile File analysisFile;
+
+    // 生成完成文件之后的选择弹框
+    private AlertDialog mDialog;
+
+    // 自定义handler对象
+    private Handler handler = new MyHandler();
+
+    private Map<String, String> stockMap = new ConcurrentHashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -145,10 +155,11 @@ public class MainActivity extends Activity {
         return super.onMenuItemSelected(featureId, item);
     }
 
-    private void downloadThreeTable() {
+    private synchronized void downloadThreeTable() {
         hasHint = false;
         countDownLatch = new CountDownLatch(4);
         try {
+            stockName = "";
             EditText stockNumText = findViewById(R.id.stock_num);
             stockNum = stockNumText.getText().toString().trim();
             Log.i(TAG, "yejian downloadThreeTable stockNum is: " + stockNum);
@@ -157,51 +168,35 @@ public class MainActivity extends Activity {
                 Toast.makeText(MainActivity.this, R.string.stock_num_hint, Toast.LENGTH_SHORT).show();
                 return;
             }
-            if (FileUtil.hasAnalysis(stockNum)) {
-                Log.i(TAG, "yejian " + stockNum + "hasAnalysis open directly");
-                // 已经分析过了，直接打开
-                FileUtil.openFile(FileUtil.getAnalysisFile(FileUtil.getBasePath(stockNum)), MainActivity.this);
-                return;
-            }
+            stockMap.put(stockNum, "");
             mWebView.loadUrl("http://stockpage.10jqka.com.cn/" + stockNum);
+            boolean delete = FileUtil.hasAnalysisAndDelete(stockNum);
+            Log.i(TAG, "yejian downloadThreeTable delete " + stockNum + " dir " + delete);
             OKHttpUtil.asyncGet(mCookie, DEBT_URL + stockNum, getCallback());
             OKHttpUtil.asyncGet(mCookie, BENEFIT_URL + stockNum, getCallback());
             OKHttpUtil.asyncGet(mCookie, CASH_URL + stockNum, getCallback());
+
+            TaskUtil.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        countDownLatch.await();
+                        while (TextUtils.isEmpty(stockMap.get(stockNum))) {
+                            Thread.sleep(200);
+                        }
+                        analysisFile = FileUtil.getAnalysisFile(stockNum, stockMap.get(stockNum));
+                        FileUtil.copy("18步数据汇总工具及异常项自动计算方法增加2020年数据.xls", analysisFile, MainActivity.this);
+                        ExcelUtil.updateExcel(analysisFile, FileUtil.getDebtFile(stockNum), FileUtil.getBenefitFile(stockNum), FileUtil.getCashFile(stockNum));
+                        handler.obtainMessage().sendToTarget();
+                    } catch (InterruptedException e) {
+                        Log.e(TAG, "yejian await read excel exception: " + e.toString());
+                    }
+                }
+            });
         } catch (Exception e) {
             Log.e(TAG, "yejian downloadThreeTable exception: " + e.toString());
             hintNumError();
         }
-        TaskUtil.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    countDownLatch.await();
-                } catch (InterruptedException e) {
-                    Log.e(TAG, "yejian await read excel exception: " + e.toString());
-                }
-                File analysisFile = FileUtil.getAnalysisFile(FileUtil.getBasePath(stockNum));
-                FileUtil.copy("18步数据汇总工具及异常项自动计算方法增加2020年数据.xls", analysisFile, MainActivity.this);
-                String basePath = FileUtil.getBasePath(stockNum);
-                ExcelUtil.updateExcel(analysisFile, FileUtil.getDebtFile(basePath), FileUtil.getBenefitFile(basePath), FileUtil.getCashFile(basePath));
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    Log.e(TAG, "yejian sleep exception: " + e.toString());
-                }
-                FileUtil.openFile(analysisFile, MainActivity.this);
-//                FileUtil.openAssignFolder(analysisFile.getParentFile(), MainActivity.this);
-//                Intent intent = new Intent();
-//                intent.setComponent(new ComponentName("com.huawei.filemanager", "com.huawei.hidisk.view.activity.category.StorageActivity"));
-//                intent.putExtra("curr_dir", analysisFile.getParent());
-//                startActivity(intent);
-//                ExcelUtil.readExcel(analysisFile);
-//                ExcelUtil.readExcel(FileUtil.getDebtFile(FileUtil.getBasePath(stockNum)));
-//                ExcelUtil.readExcel(FileUtil.getBenefitFile(FileUtil.getBasePath(stockNum)));
-//                ExcelUtil.readExcel(FileUtil.getCashFile(FileUtil.getBasePath(stockNum)));
-            }
-        });
-        // 打开下载之后的文件
-//        FileUtil.openFile(file, MainActivity.this);
     }
 
     private Callback getCallback() {
@@ -359,16 +354,22 @@ public class MainActivity extends Activity {
                 return;
             }
             mWebView.evaluateJavascript("document.title", value -> {
+                Log.i(TAG, "yejian document.title: " + value);
                 if (value != null) {
-                    int index = value.indexOf('(');
-                    Log.i(TAG, "yejian evaluateJavascript index: " + index);
-                    if (index != -1) {
-                        stockName = value.substring(0, index);
+                    int first = value.indexOf('(');
+                    int second = value.indexOf(')');
+                    Log.i(TAG, "yejian evaluateJavascript first index: " + first);
+                    Log.i(TAG, "yejian evaluateJavascript second index: " + first);
+                    if (first != -1) {
+                        String stockName = value.substring(0, first);
                         stockName = stockName.replace("\"", "");
+                        if (second != -1) {
+                            String stockNum = value.substring(first + 1, second);
+                            stockMap.put(stockNum, stockName);
+                            Log.i(TAG, "yejian stockNum: " + stockNum + ", stockName: " + stockName);
+                        }
                     }
                 }
-                Log.i(TAG, "yejian document.title: " + value);
-                Log.i(TAG, "yejian stockName: " + stockName);
                 countDownLatch.countDown();
             });
         }
@@ -389,4 +390,67 @@ public class MainActivity extends Activity {
 //            Log.e(TAG, "yejian forceStopApp: " + e.toString());
 //        }
 //    }
+
+    private final class MyHandler extends Handler {
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            super.handleMessage(msg);
+            mDialog = new AlertDialog.Builder(MainActivity.this).setNegativeButton(R.string.open_directly, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    FileUtil.openFile(analysisFile, MainActivity.this);
+                    dialog.dismiss();
+                }
+            }).setPositiveButton(R.string.share, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent();
+                    FileUtil.shareFile(analysisFile, MainActivity.this);
+                    dialog.dismiss();
+                }
+            }).setTitle(R.string.eighteen_step_analysis_table).setMessage(R.string.description).create();
+            buildDialogStyle(mDialog);
+            mDialog.show();
+        }
+    }
+
+    /**
+     * 构建样式
+     *
+     * @param dialog 弹窗
+     */
+    private static void buildDialogStyle(AlertDialog dialog) {
+        try {
+            //TODO mMessageView mTitleView等名称是对应AlertController类中的控件命名
+            Field mAlert = AlertDialog.class.getDeclaredField("mAlert");
+            mAlert.setAccessible(true);
+            Object mController = mAlert.get(dialog);
+            //获取到内容的Text
+            Field mMessage = mController.getClass().getDeclaredField("mMessageView");
+            mMessage.setAccessible(true);
+            TextView mMessageView = (TextView) mMessage.get(mController);
+            mMessageView.setTextSize(18);
+            mMessageView.setTextColor(Color.GREEN);//title样式修改成``色
+
+            //获取到标题的View并设置大小颜色
+            Field mTitle = mController.getClass().getDeclaredField("mTitleView");
+            mTitle.setAccessible(true);
+            TextView mTitleView = (TextView) mTitle.get(mController);
+            mTitleView.setTextSize(18);
+            mTitleView.setTextColor(Color.RED);
+
+            //获取到按钮
+            Button pButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);//确认按键
+            pButton.setTextColor(Color.RED);
+
+            //获取按钮
+            Button nButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE);//取消
+            nButton.setTextColor(Color.BLUE);
+
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+    }
 }

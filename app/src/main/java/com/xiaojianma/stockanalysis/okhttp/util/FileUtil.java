@@ -12,7 +12,7 @@ import android.util.Log;
 
 import androidx.core.content.FileProvider;
 
-import com.xiaojianma.stockanalysis.MainActivity;
+import com.xiaojianma.stockanalysis.R;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -122,6 +122,34 @@ public final class FileUtil {
     }
 
     /**
+     * 分享文件
+     *
+     * @param file
+     */
+    public static void shareFile(File file, Activity activity) {
+        Intent intent = new Intent();
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        //设置intent的Action属性
+        intent.setAction(Intent.ACTION_SEND);
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        //获取文件file的MIME类型
+        String type = getMIMEType(file);
+        Uri uri = Uri.fromFile(file);
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
+            uri = FileProvider.getUriForFile(activity, "com.xiaojianma.stockanalysis.fileprovider", file);
+        } else {
+            uri = Uri.fromFile(file);
+        }
+        //设置intent的data和Type属性。
+        /*uri*/
+        intent.setType(type);
+        intent.putExtra(Intent.EXTRA_STREAM, uri);
+
+        //跳转
+        activity.startActivity(Intent.createChooser(intent, activity.getString(R.string.share_file)));
+    }
+
+    /**
      * 根据文件后缀名获得对应的MIME类型。
      *
      * @param file
@@ -147,13 +175,28 @@ public final class FileUtil {
         return type;
     }
 
-    public static boolean hasAnalysis(String stockNum) {
+    public static boolean hasAnalysisAndDelete(String stockNum) {
         String basePath = getBasePath(stockNum);
-        File debtFile = getDebtFile(basePath);
-        File benefitFile = getBenefitFile(basePath);
-        File cashFile = getCashFile(basePath);
-        File analysis = getAnalysisFile(basePath);
-        return debtFile.exists() && benefitFile.exists() && cashFile.exists() && analysis.exists();
+        File file = new File(basePath);
+        boolean result = true;
+        if (file.exists()) {
+            File[] files = file.listFiles();
+            for (File item : files) {
+                try {
+                    item.delete();
+                } catch (Exception e) {
+                    Log.e(TAG, "yejian hasAnalysisAndDelete  " + stockNum + " item exception: " + e.toString());
+                    result = false;
+                }
+            }
+        }
+        try {
+            file.delete();
+        } catch (Exception e) {
+            Log.e(TAG, "yejian hasAnalysisAndDelete " + stockNum + " root dir exception: " + e.toString());
+            result = false;
+        }
+        return result;
     }
 
     public static String getBasePath(String stockNum) {
@@ -162,23 +205,27 @@ public final class FileUtil {
         if (TextUtils.isEmpty(stockNum)) {
             return storageDir + File.separator + "weimiao_learn";
         }
-        return storageDir + File.separator + "weimiao_learn" + File.separator + stockNum + File.separator + stockNum;
+        return storageDir + File.separator + "weimiao_learn" + File.separator + stockNum;
     }
 
-    public static File getAnalysisFile(String basePath) {
-        return new File(basePath + "_18步分析.xlsx");
+    public static File getAnalysisFile(String stockNum, String... childName) {
+        String basePath = getBasePath(stockNum);
+        if (childName != null && childName.length > 0) {
+            return new File(basePath + File.separator + stockNum + "_" + childName[0] + "_18步分析.xls");
+        }
+        return new File(basePath + File.separator + stockNum + "_18步分析.xls");
     }
 
-    public static File getDebtFile(String basePath) {
-        return new File(basePath + "_debt_year.xls");
+    public static File getDebtFile(String stockNum) {
+        return new File(getBasePath(stockNum) + File.separator + stockNum + "_debt_year.xls");
     }
 
-    public static File getBenefitFile(String basePath) {
-        return new File(basePath + "_benefit_year.xls");
+    public static File getBenefitFile(String stockNum) {
+        return new File(getBasePath(stockNum) + File.separator + stockNum + "_benefit_year.xls");
     }
 
-    public static File getCashFile(String basePath) {
-        return new File(basePath + "_cash_year.xls");
+    public static File getCashFile(String stockNum) {
+        return new File(getBasePath(stockNum) + File.separator + stockNum + "_cash_year.xls");
     }
 
     public static void copy(String srcfilePath, File analysisFile, Context context) {
