@@ -1,16 +1,18 @@
 <paths>
+    <root-path name="root_path" path="./" />
+
     <!--物理路径相当于Context.getFilesDir() + /path/-->
-    <files-path name="name" path="./" />
+    <files-path name="files_paht" path="./" />
 
     <!--物理路径相当于Context.getCacheDir() + /path/-->
-    <cache-path name="name" path="./" />
+    <cache-path name="cache_path" path="./" />
 
     <!--物理路径相当于Environment.getExternalStorageDirectory() + /path/-->
-    <external-path name="weimiao" path="weimiao_learn" />
+    <external-path name="external_path" path="./" />
 
     <!--物理路径相当于Context.getExternalFilesDir(String) + /path/-->
-    <external-files-path name="name" path="./" />
+    <external-files-path name="external_files" path="./" />
 
     <!--物理路径相当于Context.getExternalCacheDir() + /path/-->
-    <external-cache-path name="name" path="./" />
+    <external-cache-path name="external_cache" path="./" />
 </paths>
