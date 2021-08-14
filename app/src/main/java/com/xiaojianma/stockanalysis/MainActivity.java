@@ -82,6 +82,8 @@ public class MainActivity extends Activity {
     // 等待三张表都
     private volatile CountDownLatch countDownLatch;
 
+    private volatile boolean noName = false;
+
     // 是否已经提示过股票代码有误
     private volatile boolean hasHint = false;
 
@@ -158,6 +160,7 @@ public class MainActivity extends Activity {
     private synchronized void downloadThreeTable() {
         hasHint = false;
         countDownLatch = new CountDownLatch(4);
+        noName = false;
         try {
             stockName = "";
             EditText stockNumText = findViewById(R.id.stock_num);
@@ -181,8 +184,13 @@ public class MainActivity extends Activity {
                 public void run() {
                     try {
                         countDownLatch.await();
+                        int time = 0;
                         while (TextUtils.isEmpty(stockMap.get(stockNum))) {
+                            if (noName || time == 5000) {
+                                break;
+                            }
                             Thread.sleep(200);
+                            time += 200;
                         }
                         analysisFile = FileUtil.getAnalysisFile(stockNum, stockMap.get(stockNum));
                         FileUtil.copy("18步数据汇总工具及异常项自动计算方法增加2020年数据.xls", analysisFile, MainActivity.this);
@@ -369,6 +377,8 @@ public class MainActivity extends Activity {
                             Log.i(TAG, "yejian stockNum: " + stockNum + ", stockName: " + stockName);
                         }
                     }
+                    noName = (first == -1 && second == -1);
+                    Log.i(TAG, "yejian stockNum: " + stockNum + ", noName: " + noName);
                 }
                 countDownLatch.countDown();
             });
