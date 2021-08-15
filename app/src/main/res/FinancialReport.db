@@ -1,0 +1,13 @@
+CREATE TABLE Book(
+id INTEGER PRIMARY key autoincrement,
+作者 text,
+price REAL,
+pages INTEGER,
+name text
+);
+
+CREATE TABLE Category(
+id integer PRIMARY key autoincrement,
+category_name text,
+category_code integer
+);

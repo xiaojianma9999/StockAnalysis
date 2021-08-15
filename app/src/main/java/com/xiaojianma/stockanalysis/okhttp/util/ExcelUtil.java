@@ -1,6 +1,5 @@
 package com.xiaojianma.stockanalysis.okhttp.util;
 
-import android.os.Handler;
 import android.util.Log;
 
 import java.io.File;
@@ -136,7 +135,7 @@ public final class ExcelUtil {
         int rows = srcRows;
         for (int col = 0; col < sheet.getColumns() - 1; col++) {
             rows = srcRows;
-            for (int row = 1; row < sheet.getRows() - 1; row++) {
+            for (int row = 2; row < sheet.getRows() - 1; row++) {
                 String contents = sheet.getCell(col, row).getContents().trim();
 //                if (row == srcRows && (contents == null || "".equals(contents))) {
 //                    // 如果该行内容为空，直接跳过改行

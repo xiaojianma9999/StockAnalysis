@@ -31,6 +31,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import com.xiaojianma.stockanalysis.database.MyDatabaseHelper;
 import com.xiaojianma.stockanalysis.okhttp.util.ExcelUtil;
 import com.xiaojianma.stockanalysis.okhttp.util.FileUtil;
 import com.xiaojianma.stockanalysis.okhttp.util.OKHttpUtil;
@@ -103,9 +104,12 @@ public class MainActivity extends Activity {
 
     private Map<String, String> stockMap = new ConcurrentHashMap<>();
 
+    private MyDatabaseHelper dbHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        dbHelper = new MyDatabaseHelper(this, "FinancialReport.db", null, 6);
         setContentView(R.layout.activity_main);
         PermissionUtil.verifyStoragePermissions(this);
         initWebView();
@@ -186,7 +190,7 @@ public class MainActivity extends Activity {
                         countDownLatch.await();
                         int time = 0;
                         while (TextUtils.isEmpty(stockMap.get(stockNum))) {
-                            if (noName || time == 5000) {
+                            if (noName || time == 10000) {
                                 break;
                             }
                             Thread.sleep(200);
