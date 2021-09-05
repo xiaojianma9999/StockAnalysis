@@ -30,6 +30,25 @@
             android:text="@string/start_analysis"/>
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/index_standard"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:gravity="center">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/index_standard"/>
+    </LinearLayout>
+
+    <WebView
+        android:id="@+id/url_web_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"/>
 
     <WebView
         android:id="@+id/web_view"

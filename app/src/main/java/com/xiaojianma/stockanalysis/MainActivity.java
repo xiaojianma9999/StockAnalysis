@@ -25,6 +25,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -76,6 +77,9 @@ public class MainActivity extends Activity {
 
     private WebView mWebView;
 
+    // 加载i问财与同花顺个股网等url
+    private WebView mUrlWebView;
+
     private WebSettings mWebSettings;
 
     private String mCookie;
@@ -106,13 +110,22 @@ public class MainActivity extends Activity {
 
     private MyDatabaseHelper dbHelper;
 
+    private LinearLayout eighteenSteps;
+
+    private LinearLayout indexStand;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         dbHelper = new MyDatabaseHelper(this, "FinancialReport.db", null, 6);
         setContentView(R.layout.activity_main);
+        eighteenSteps = findViewById(R.id.stock_analysis);
+        indexStand = findViewById(R.id.index_standard);
         PermissionUtil.verifyStoragePermissions(this);
-        initWebView();
+        mWebView = findViewById(R.id.web_view);
+        mUrlWebView = findViewById(R.id.url_web_view);
+        initWebView(mWebView);
+        initWebView(mUrlWebView);
     }
 
     @Override
@@ -134,7 +147,38 @@ public class MainActivity extends Activity {
         File dstFile;
         switch (item.getItemId()) {
             case R.id.eighteen_step_analysis:
-                downloadThreeTable();
+                setViewVisible(indexStand, View.GONE);
+                setViewVisible(mUrlWebView, View.GONE);
+                setViewVisible(eighteenSteps, View.VISIBLE);
+                break;
+            case R.id.menu_index_standard:
+                setViewVisible(eighteenSteps, View.GONE);
+                setViewVisible(mUrlWebView, View.GONE);
+                setViewVisible(indexStand, View.VISIBLE);
+                break;
+            case R.id.i_wencai:
+                setViewVisible(eighteenSteps, View.GONE);
+                setViewVisible(indexStand, View.GONE);
+                setViewVisible(mUrlWebView, View.VISIBLE);
+                if (mUrlWebView != null) {
+                    mUrlWebView.loadUrl("http://www.iwencai.com/?allow_redirect=false");
+                }
+                break;
+            case R.id.i_wencai_new:
+                setViewVisible(eighteenSteps, View.GONE);
+                setViewVisible(indexStand, View.GONE);
+                setViewVisible(mUrlWebView, View.VISIBLE);
+                if (mUrlWebView != null) {
+                    mUrlWebView.loadUrl("http://www.iwencai.com/unifiedwap/home/index");
+                }
+                break;
+            case R.id.ge_gu_wang:
+                setViewVisible(eighteenSteps, View.GONE);
+                setViewVisible(indexStand, View.GONE);
+                setViewVisible(mUrlWebView, View.VISIBLE);
+                if (mUrlWebView != null) {
+                    mUrlWebView.loadUrl("http://stockpage.10jqka.com.cn/");
+                }
                 break;
             case R.id.view_debt_seven_step:
                 dstFilePath = basePath + File.separator + "资产负债表分析7部法.xlsx";
@@ -159,6 +203,12 @@ public class MainActivity extends Activity {
         }
 
         return super.onMenuItemSelected(featureId, item);
+    }
+
+    private void setViewVisible(View view, int visible) {
+        if (view != null) {
+            view.setVisibility(visible);
+        }
     }
 
     private synchronized void downloadThreeTable() {
@@ -292,12 +342,11 @@ public class MainActivity extends Activity {
     /**
      * 初始化和设置webView
      */
-    private void initWebView() {
-        mWebView = findViewById(R.id.web_view);
-        mWebView.loadUrl(STOCK_URL);
-        mWebView.setVisibility(View.GONE);
+    private void initWebView(WebView webView) {
+        webView.loadUrl(STOCK_URL);
+        webView.setVisibility(View.GONE);
 
-        mWebSettings = mWebView.getSettings();
+        mWebSettings = webView.getSettings();
         mWebSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
 
         // 设置js可以直接打开窗口，如window.open()，默认为false
@@ -312,8 +361,10 @@ public class MainActivity extends Activity {
         mWebSettings.setBuiltInZoomControls(true);
         mWebSettings.setSupportZoom(true);
         //支持获取手势焦点
-        mWebView.requestFocusFromTouch();
-        mWebView.setWebViewClient(new MyWeb());
+        webView.requestFocusFromTouch();
+        if (webView == mWebView) {
+            webView.setWebViewClient(new MyWeb());
+        }
     }
 
     @Override

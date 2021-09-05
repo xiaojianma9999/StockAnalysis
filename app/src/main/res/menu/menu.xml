@@ -6,6 +6,22 @@
         android:title="@string/eighteen_step_analysis"
         android:icon="@drawable/abc_vector_test">
     </item>
+    <item android:id="@+id/i_wencai"
+        android:title="@string/view_i_wencai"
+        android:icon="@drawable/abc_vector_test">
+    </item>
+    <item android:id="@+id/i_wencai_new"
+        android:title="@string/view_i_wencai_new"
+        android:icon="@drawable/abc_vector_test">
+    </item>
+    <item android:id="@+id/ge_gu_wang"
+        android:title="@string/view_ge_gu_wang"
+        android:icon="@drawable/abc_vector_test">
+    </item>
+    <item android:id="@+id/menu_index_standard"
+        android:title="@string/view_index_standard"
+        android:icon="@drawable/abc_vector_test">
+    </item>
     <item android:id="@+id/view_case_mind_map"
         android:title="@string/view_case_mind_map"
         android:icon="@drawable/abc_vector_test">
