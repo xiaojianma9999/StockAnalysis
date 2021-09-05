@@ -190,15 +190,16 @@ public class MainActivity extends Activity {
                         countDownLatch.await();
                         int time = 0;
                         while (TextUtils.isEmpty(stockMap.get(stockNum))) {
-                            if (noName || time == 10000) {
+                            if (noName || time >= 5000) {
                                 break;
                             }
                             Thread.sleep(200);
                             time += 200;
                         }
                         analysisFile = FileUtil.getAnalysisFile(stockNum, stockMap.get(stockNum));
-                        FileUtil.copy("18步数据汇总工具及异常项自动计算方法增加2020年数据.xls", analysisFile, MainActivity.this);
-                        ExcelUtil.updateExcel(analysisFile, FileUtil.getDebtFile(stockNum), FileUtil.getBenefitFile(stockNum), FileUtil.getCashFile(stockNum));
+                        FileUtil.copy("18步数据汇总工具及异常项自动计算方法增加2020年数据.xlsx", analysisFile, MainActivity.this);
+//                        ExcelUtil.updateExcel(analysisFile, FileUtil.getDebtFile(stockNum), FileUtil.getBenefitFile(stockNum), FileUtil.getCashFile(stockNum));
+                        ExcelUtil.updateExcelByPOI(analysisFile, FileUtil.getDebtFile(stockNum), FileUtil.getBenefitFile(stockNum), FileUtil.getCashFile(stockNum));
                         handler.obtainMessage().sendToTarget();
                     } catch (InterruptedException e) {
                         Log.e(TAG, "yejian await read excel exception: " + e.toString());

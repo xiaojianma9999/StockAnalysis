@@ -211,7 +211,7 @@ public final class FileUtil {
     public static File getAnalysisFile(String stockNum, String... childName) {
         String basePath = getBasePath(stockNum);
         if (childName != null && childName.length > 0) {
-            return new File(basePath + File.separator + stockNum + "_" + childName[0] + "_18步分析.xls");
+            return new File(basePath + File.separator + stockNum + "_" + childName[0] + "_18步分析.xlsx");
         }
         return new File(basePath + File.separator + stockNum + "_18步分析.xls");
     }

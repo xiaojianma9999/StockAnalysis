@@ -2,7 +2,15 @@ package com.xiaojianma.stockanalysis.okhttp.util;
 
 import android.util.Log;
 
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import jxl.Cell;
 import jxl.Sheet;
@@ -121,6 +129,60 @@ public final class ExcelUtil {
             }
             dstFile.renameTo(file);
         }
+    }
+
+    /**
+     * jxl暂时不提供修改已经存在的数据表,这里通过一个小办法来达到这个目的,不适合大型数据更新! 这里是通过覆盖原文件来更新的.
+     *
+     * @param file        需要更新excel表格文件
+     * @param debtFile    资产负债表excel表格文件
+     * @param benefitFile 利润表excel表格文件
+     * @param cashFile    现金流量表excel表格文件
+     */
+    public static void updateExcelByPOI(File file, File debtFile, File benefitFile, File cashFile) {
+        try {
+            //创建工作簿
+            XSSFWorkbook workbook = new XSSFWorkbook(new FileInputStream(file));
+            //读取第一个工作表(这里的下标与list一样的，从0开始取，之后的也是如此)
+            XSSFSheet sheet = workbook.getSheetAt(1);
+            int rowNum = 1;
+            //获取第一行的数据
+            XSSFRow row = sheet.getRow(0);
+            rowNum = fillDebtDate(debtFile, sheet, rowNum);
+            rowNum = fillDebtDate(benefitFile, sheet, rowNum);
+            fillDebtDate(cashFile, sheet, rowNum);
+            workbook.cloneSheet(1);
+            try (FileOutputStream outputStream = new FileOutputStream(file)){
+                workbook.write(outputStream);
+                outputStream.flush();
+                outputStream.close();
+            }
+//            workbook.cloneSheet(1);
+//            workbook.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static int fillDebtDate(File updateFile, XSSFSheet updateSheet, int rowNum) throws IOException {
+        Workbook debtBook = null;
+        try {
+            debtBook = Workbook.getWorkbook(updateFile);
+        } catch (Exception e) {
+            Log.e(TAG, "yejian updateDebtData exception: " + e.toString() + ", file is: " + updateFile.getAbsolutePath());
+        }
+        Sheet sheet = debtBook.getSheet(0);
+        for (int row = 0; row < sheet.getRows(); row++) {
+            for (int col = 0; col < sheet.getColumns(); col++) {
+                String contents = sheet.getCell(col, row).getContents().trim();
+                XSSFCell cell = updateSheet.getRow(rowNum).getCell(col);
+                if (cell != null) {
+                    cell.setCellValue(contents);
+                }
+            }
+            rowNum++;
+        }
+        return rowNum;
     }
 
     private static int updateDebtData(File updateFile, WritableSheet srcSheet, int srcRows) {
