@@ -260,12 +260,12 @@ public class MainActivity extends Activity {
                 }
                 try (Sink sink = Okio.sink(file); BufferedSink bufferedSink = Okio.buffer(sink);) {
                     bufferedSink.writeAll(response.body().source());
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(MainActivity.this, getString(R.string.debet_success, fileName), Toast.LENGTH_SHORT).show();
-                        }
-                    });
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            Toast.makeText(MainActivity.this, getString(R.string.debt_success, fileName), Toast.LENGTH_SHORT).show();
+//                        }
+//                    });
                     Log.i(TAG, "yejian download " + fileName + " success");
                 } catch (Exception e) {
                     Log.e(TAG, "yejian downloadBySink " + fileName + " error: " + e.toString());
