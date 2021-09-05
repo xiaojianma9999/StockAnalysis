@@ -213,7 +213,7 @@ public class MainActivity extends Activity {
 
     private synchronized void downloadThreeTable() {
         hasHint = false;
-        countDownLatch = new CountDownLatch(4);
+        countDownLatch = new CountDownLatch(3);
         noName = false;
         try {
             stockName = "";
@@ -225,7 +225,7 @@ public class MainActivity extends Activity {
                 Toast.makeText(MainActivity.this, R.string.stock_num_hint, Toast.LENGTH_SHORT).show();
                 return;
             }
-            stockMap.put(stockNum, "");
+            stockMap.clear();
             mWebView.loadUrl("http://stockpage.10jqka.com.cn/" + stockNum);
             boolean delete = FileUtil.hasAnalysisAndDelete(stockNum);
             Log.i(TAG, "yejian downloadThreeTable delete " + stockNum + " dir " + delete);

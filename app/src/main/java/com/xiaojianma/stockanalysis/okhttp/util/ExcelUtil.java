@@ -152,11 +152,14 @@ public final class ExcelUtil {
             rowNum = fillDebtDate(benefitFile, sheet, rowNum);
             fillDebtDate(cashFile, sheet, rowNum);
             workbook.cloneSheet(1);
-            try (FileOutputStream outputStream = new FileOutputStream(file)){
+            File newFile = new File(file.getParentFile(), file.getName() + "new.xlsx");
+            try (FileOutputStream outputStream = new FileOutputStream(newFile)) {
                 workbook.write(outputStream);
                 outputStream.flush();
                 outputStream.close();
             }
+            file.delete();
+            newFile.renameTo(file);
 //            workbook.cloneSheet(1);
 //            workbook.close();
         } catch (IOException e) {
