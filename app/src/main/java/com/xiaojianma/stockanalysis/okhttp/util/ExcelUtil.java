@@ -142,7 +142,8 @@ public final class ExcelUtil {
     public static void updateExcelByPOI(File file, File debtFile, File benefitFile, File cashFile) {
         try {
             //创建工作簿
-            XSSFWorkbook workbook = new XSSFWorkbook(new FileInputStream(file));
+            FileInputStream fileInputStream = new FileInputStream(file);
+            XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
             //读取第一个工作表(这里的下标与list一样的，从0开始取，之后的也是如此)
             XSSFSheet sheet = workbook.getSheetAt(1);
             int rowNum = 1;
@@ -151,17 +152,11 @@ public final class ExcelUtil {
             rowNum = fillDebtDate(debtFile, sheet, rowNum);
             rowNum = fillDebtDate(benefitFile, sheet, rowNum);
             fillDebtDate(cashFile, sheet, rowNum);
-            workbook.cloneSheet(1);
-            File newFile = new File(file.getParentFile(), file.getName() + "new.xlsx");
-            try (FileOutputStream outputStream = new FileOutputStream(newFile)) {
+            fileInputStream.close();
+            try (FileOutputStream outputStream = new FileOutputStream(file)) {
                 workbook.write(outputStream);
                 outputStream.flush();
-                outputStream.close();
             }
-            file.delete();
-            newFile.renameTo(file);
-//            workbook.cloneSheet(1);
-//            workbook.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

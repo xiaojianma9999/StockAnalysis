@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">StockAnalysis</string>
     <string name="debt_success">%1$s下载成功</string>
-    <string name="debet_fail">%1$s下载失败</string>
+    <string name="debt_fail">%1$s下载失败</string>
     <string name="eighteen_step_analysis">18步分析法</string>
     <string name="eighteen_step_analysis_table">18步分析法表格</string>
     <string name="stock_num_description">请输入需要分析的股票代码</string>
