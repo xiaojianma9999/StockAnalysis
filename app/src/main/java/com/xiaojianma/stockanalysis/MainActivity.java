@@ -126,6 +126,7 @@ public class MainActivity extends Activity {
         mUrlWebView = findViewById(R.id.url_web_view);
         initWebView(mWebView);
         initWebView(mUrlWebView);
+        mUrlWebView.setWebViewClient(new WebViewClient());
     }
 
     @Override
