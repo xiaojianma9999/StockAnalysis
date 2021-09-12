@@ -152,6 +152,14 @@ public class MainActivity extends Activity {
                 setViewVisible(mUrlWebView, View.GONE);
                 setViewVisible(eighteenSteps, View.VISIBLE);
                 break;
+            case R.id.links:
+                setViewVisible(eighteenSteps, View.GONE);
+                setViewVisible(indexStand, View.GONE);
+                setViewVisible(mUrlWebView, View.VISIBLE);
+                if (mUrlWebView != null) {
+                    mUrlWebView.loadUrl("http://rongming.mikecrm.com/pfCyxZQ");
+                }
+                break;
             case R.id.menu_index_standard:
                 setViewVisible(eighteenSteps, View.GONE);
                 setViewVisible(mUrlWebView, View.GONE);

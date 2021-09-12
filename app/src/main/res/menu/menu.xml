@@ -6,6 +6,10 @@
         android:title="@string/eighteen_step_analysis"
         android:icon="@drawable/abc_vector_test">
     </item>
+    <item android:id="@+id/links"
+        android:title="@string/links"
+        android:icon="@drawable/abc_vector_test">
+    </item>
     <item android:id="@+id/i_wencai"
         android:title="@string/view_i_wencai"
         android:icon="@drawable/abc_vector_test">
