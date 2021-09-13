@@ -172,10 +172,23 @@ public final class ExcelUtil {
         Sheet sheet = debtBook.getSheet(0);
         for (int row = 0; row < sheet.getRows(); row++) {
             for (int col = 0; col < sheet.getColumns(); col++) {
-                String contents = sheet.getCell(col, row).getContents().trim();
-                XSSFCell cell = updateSheet.getRow(rowNum).getCell(col);
-                if (cell != null) {
-                    cell.setCellValue(contents);
+                Object contents = sheet.getCell(col, row).getContents().trim();
+                XSSFRow curRow = updateSheet.getRow(rowNum);
+                if (curRow == null) {
+                    curRow = updateSheet.createRow(rowNum);
+                }
+                XSSFCell curRowCell = curRow.getCell(col);
+                if (curRowCell == null) {
+                    curRowCell = curRow.createCell(col);
+                }
+                if (contents instanceof Double) {
+                    curRowCell.setCellValue(Double.parseDouble(contents.toString()));
+                } else if (contents instanceof Integer) {
+                    curRowCell.setCellValue(Integer.parseInt(contents.toString()));
+                } else if (contents instanceof Long) {
+                    curRowCell.setCellValue(Long.parseLong(contents.toString()));
+                } else {
+                    curRowCell.setCellValue(contents.toString());
                 }
             }
             rowNum++;
