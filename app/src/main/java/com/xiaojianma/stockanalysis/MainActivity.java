@@ -1,5 +1,6 @@
 package com.xiaojianma.stockanalysis;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -114,6 +115,9 @@ public class MainActivity extends Activity {
 
     private LinearLayout indexStand;
 
+    // 股票名称
+    private volatile boolean isSelf = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -147,10 +151,19 @@ public class MainActivity extends Activity {
         }
         File dstFile;
         switch (item.getItemId()) {
-            case R.id.eighteen_step_analysis:
+            case R.id.eighteen_step_analysis_self:
+                isSelf = true;
                 setViewVisible(indexStand, View.GONE);
                 setViewVisible(mUrlWebView, View.GONE);
                 setViewVisible(eighteenSteps, View.VISIBLE);
+                setActionBar(R.string.eighteen_step_analysis_self);
+                break;
+            case R.id.eighteen_step_analysis:
+                isSelf = false;
+                setViewVisible(indexStand, View.GONE);
+                setViewVisible(mUrlWebView, View.GONE);
+                setViewVisible(eighteenSteps, View.VISIBLE);
+                setActionBar(R.string.eighteen_step_analysis);
                 break;
             case R.id.links:
                 setViewVisible(eighteenSteps, View.GONE);
@@ -159,11 +172,13 @@ public class MainActivity extends Activity {
                 if (mUrlWebView != null) {
                     mUrlWebView.loadUrl("http://rongming.mikecrm.com/pfCyxZQ");
                 }
+                setActionBar(R.string.links);
                 break;
             case R.id.menu_index_standard:
                 setViewVisible(eighteenSteps, View.GONE);
                 setViewVisible(mUrlWebView, View.GONE);
                 setViewVisible(indexStand, View.VISIBLE);
+                setActionBar(R.string.view_index_standard);
                 break;
             case R.id.i_wencai:
                 setViewVisible(eighteenSteps, View.GONE);
@@ -172,6 +187,7 @@ public class MainActivity extends Activity {
                 if (mUrlWebView != null) {
                     mUrlWebView.loadUrl("http://www.iwencai.com/?allow_redirect=false");
                 }
+                setActionBar(R.string.view_i_wencai);
                 break;
             case R.id.i_wencai_new:
                 setViewVisible(eighteenSteps, View.GONE);
@@ -180,6 +196,7 @@ public class MainActivity extends Activity {
                 if (mUrlWebView != null) {
                     mUrlWebView.loadUrl("http://www.iwencai.com/unifiedwap/home/index");
                 }
+                setActionBar(R.string.view_i_wencai_new);
                 break;
             case R.id.ge_gu_wang:
                 setViewVisible(eighteenSteps, View.GONE);
@@ -188,6 +205,7 @@ public class MainActivity extends Activity {
                 if (mUrlWebView != null) {
                     mUrlWebView.loadUrl("http://stockpage.10jqka.com.cn/");
                 }
+                setActionBar(R.string.view_ge_gu_wang);
                 break;
             case R.id.view_debt_seven_step:
                 dstFilePath = basePath + File.separator + "资产负债表分析7部法.xlsx";
@@ -199,9 +217,18 @@ public class MainActivity extends Activity {
                 FileUtil.openFile(dstFile, this);
                 break;
             case R.id.view_case_mind_map:
-                dstFilePath = basePath + File.separator + "案例指导及科目思维导图.xlsx";
+                dstFilePath = basePath + File.separator + "2.0课程-案例指导及科目思维导图(11-20).xlsx";
                 dstFile = new File(dstFilePath);
-                srcFileName = "2.0课程-案例指导及科目思维导图（11-15）.xlsx";
+                srcFileName = "2.0课程-案例指导及科目思维导图(11-20).xlsx";
+                if (!dstFile.exists()) {
+                    FileUtil.copy(srcFileName, dstFile, this);
+                }
+                FileUtil.openFile(dstFile, this);
+                break;
+            case R.id.view_big_gift:
+                dstFilePath = basePath + File.separator + "终极大礼包 .xlsx";
+                dstFile = new File(dstFilePath);
+                srcFileName = "终极大礼包 .xlsx";
                 if (!dstFile.exists()) {
                     FileUtil.copy(srcFileName, dstFile, this);
                 }
@@ -212,6 +239,13 @@ public class MainActivity extends Activity {
         }
 
         return super.onMenuItemSelected(featureId, item);
+    }
+
+    private void setActionBar(int title) {
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle(title);
+        }
     }
 
     private void setViewVisible(View view, int visible) {
@@ -256,7 +290,8 @@ public class MainActivity extends Activity {
                             time += 200;
                         }
                         analysisFile = FileUtil.getAnalysisFile(stockNum, stockMap.get(stockNum));
-                        FileUtil.copy("18步数据汇总工具及异常项自动计算方法增加2020年数据.xlsx", analysisFile, MainActivity.this);
+                        String srcPath = isSelf ? "18步数据汇总工具及异常项自动计算方法增加2020年数据.xlsx" : "2020版本微淼18步数据汇总工具及异常项自动评价.xlsx";
+                        FileUtil.copy(srcPath, analysisFile, MainActivity.this);
 //                        ExcelUtil.updateExcel(analysisFile, FileUtil.getDebtFile(stockNum), FileUtil.getBenefitFile(stockNum), FileUtil.getCashFile(stockNum));
                         ExcelUtil.updateExcelByPOI(analysisFile, FileUtil.getDebtFile(stockNum), FileUtil.getBenefitFile(stockNum), FileUtil.getCashFile(stockNum));
                         handler.obtainMessage().sendToTarget();

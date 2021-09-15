@@ -2,6 +2,10 @@
 <menu xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <item android:id="@+id/eighteen_step_analysis_self"
+        android:title="@string/eighteen_step_analysis_self"
+        android:icon="@drawable/abc_vector_test">
+    </item>
     <item android:id="@+id/eighteen_step_analysis"
         android:title="@string/eighteen_step_analysis"
         android:icon="@drawable/abc_vector_test">
@@ -28,6 +32,10 @@
     </item>
     <item android:id="@+id/view_case_mind_map"
         android:title="@string/view_case_mind_map"
+        android:icon="@drawable/abc_vector_test">
+    </item>
+    <item android:id="@+id/view_big_gift"
+        android:title="@string/big_gift"
         android:icon="@drawable/abc_vector_test">
     </item>
     <item android:id="@+id/view_debt_seven_step"

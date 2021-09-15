@@ -158,7 +158,7 @@ public final class ExcelUtil {
                 outputStream.flush();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, "yejian updateExcelByPOI exception: " + e.toString());
         }
     }
 
