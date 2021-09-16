@@ -366,7 +366,7 @@ public class MainActivity extends Activity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(MainActivity.this, getString(R.string.debt_fail, fileName), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, getString(R.string.debt_fail, fileName) + ": " + e.toString(), Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
