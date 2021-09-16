@@ -27,6 +27,8 @@ public final class ExcelUtil {
 
     private static final String TAG = "ExcelUtil";
 
+    private static final String NUMS = "0123456789.";
+
     private ExcelUtil() {
 
     }
@@ -152,6 +154,7 @@ public final class ExcelUtil {
             rowNum = fillDebtDate(debtFile, sheet, rowNum);
             rowNum = fillDebtDate(benefitFile, sheet, rowNum);
             fillDebtDate(cashFile, sheet, rowNum);
+//            refreshFormula(workbook);
             fileInputStream.close();
             try (FileOutputStream outputStream = new FileOutputStream(file)) {
                 workbook.write(outputStream);
@@ -159,6 +162,30 @@ public final class ExcelUtil {
             }
         } catch (IOException e) {
             Log.e(TAG, "yejian updateExcelByPOI exception: " + e.toString());
+        }
+    }
+
+    /**
+     * 刷新公式
+     */
+    private static void refreshFormula(XSSFWorkbook workbook) {
+        try {
+            XSSFSheet sheet = workbook.getSheetAt(2);
+            int lastRowNum = sheet.getLastRowNum();
+            for (int i = 0; i < lastRowNum; i++) {
+                XSSFRow row = sheet.getRow(i);
+                if (row == null) {
+                    continue;
+                }
+                for (int j = 0; j < row.getLastCellNum(); j++) {
+                    XSSFCell cell = row.getCell(j);
+                    if (cell != null && cell.getCellType() == org.apache.poi.ss.usermodel.Cell.CELL_TYPE_FORMULA) {
+                        cell.setCellFormula(cell.getCellFormula());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "yejian refreshFormula exception: " + e.toString());
         }
     }
 
@@ -181,20 +208,62 @@ public final class ExcelUtil {
                 if (curRowCell == null) {
                     curRowCell = curRow.createCell(col);
                 }
-                if (contents instanceof Double) {
-                    curRowCell.setCellValue(Double.parseDouble(contents.toString()));
-                } else if (contents instanceof Integer) {
-                    curRowCell.setCellValue(Integer.parseInt(contents.toString()));
-                } else if (contents instanceof Long) {
-                    curRowCell.setCellValue(Long.parseLong(contents.toString()));
-                } else {
-                    curRowCell.setCellValue(contents.toString());
-                }
+                fillCellValue(contents, curRowCell);
             }
             rowNum++;
         }
         return rowNum;
     }
+
+    private static void fillCellValue(Object contents, XSSFCell curRowCell) {
+        if (contents != null) {
+            String str = contents.toString().trim();
+            if (str.isEmpty()) {
+                return;
+            }
+            curRowCell.setCellValue(str);
+        }
+//        try {
+//            if (contents != null) {
+//                String str = contents.toString().trim();
+//                if (str.isEmpty()) {
+//                    return;
+//                }
+//                if (!str.startsWith("--") && str.startsWith("-")) {
+//                    try {
+//                        if (str.contains(".")) {
+//                            curRowCell.setCellValue(Double.parseDouble(str));
+////                            curRowCell.setCellType(org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC);
+//                        } else {
+//                            curRowCell.setCellValue(Long.parseLong(str));
+////                            curRowCell.setCellType(org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC);
+//                        }
+//                        Log.e(TAG, "yejian fillCellValue getCellType: " + curRowCell.getCellType());
+//                        return;
+//                    } catch (Exception e) {
+//                        Log.e(TAG, "yejian fillCellValue error 1: " + e.toString());
+//                    }
+//                }
+//                for (char ch : str.toCharArray()) {
+//                    if (!NUMS.contains(ch + "")) {
+//                        curRowCell.setCellValue(str);
+//                        Log.e(TAG, "yejian fillCellValue getCellType: " + curRowCell.getCellType());
+//                        return;
+//                    }
+//                }
+//                if (str.contains(".")) {
+//                    curRowCell.setCellValue(Double.parseDouble(str));
+////                    curRowCell.setCellType(org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC);
+//                } else {
+//                    curRowCell.setCellValue(Long.parseLong(str));
+////                    curRowCell.setCellType(org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC);
+//                }
+//                Log.e(TAG, "yejian fillCellValue getCellType: " + curRowCell.getCellType());
+//            }
+//        } catch (Exception e) {
+//            Log.e(TAG, "yejian fillCellValue error 2: " + e.toString());
+//        }
+        }
 
     private static int updateDebtData(File updateFile, WritableSheet srcSheet, int srcRows) {
         WritableCell cell;
