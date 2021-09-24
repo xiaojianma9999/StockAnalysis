@@ -115,9 +115,13 @@ public class MainActivity extends Activity {
 
     private LinearLayout indexStand;
 
-    // 股票名称
+    // 是否为自研
     private volatile boolean isSelf = false;
 
+    // 是否为自研01
+    private volatile boolean isSelf01 = false;
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -153,13 +157,23 @@ public class MainActivity extends Activity {
         switch (item.getItemId()) {
             case R.id.eighteen_step_analysis_self:
                 isSelf = true;
+                isSelf01 = false;
                 setViewVisible(indexStand, View.GONE);
                 setViewVisible(mUrlWebView, View.GONE);
                 setViewVisible(eighteenSteps, View.VISIBLE);
                 setActionBar(R.string.eighteen_step_analysis_self);
                 break;
+            case R.id.eighteen_step_analysis_self01:
+                isSelf = false;
+                isSelf01 = true;
+                setViewVisible(indexStand, View.GONE);
+                setViewVisible(mUrlWebView, View.GONE);
+                setViewVisible(eighteenSteps, View.VISIBLE);
+                setActionBar(R.string.eighteen_step_analysis_self01);
+                break;
             case R.id.eighteen_step_analysis:
                 isSelf = false;
+                isSelf01 = false;
                 setViewVisible(indexStand, View.GONE);
                 setViewVisible(mUrlWebView, View.GONE);
                 setViewVisible(eighteenSteps, View.VISIBLE);
@@ -270,8 +284,10 @@ public class MainActivity extends Activity {
             }
             stockMap.clear();
             mWebView.loadUrl("http://stockpage.10jqka.com.cn/" + stockNum);
+//            mWebView.loadUrl("http://news.10jqka.com.cn/public/index_keyboard_" + stockNum + "_0_5_jsonp.html");
             boolean delete = FileUtil.hasAnalysisAndDelete(stockNum);
             Log.i(TAG, "yejian downloadThreeTable delete " + stockNum + " dir " + delete);
+//            OKHttpUtil.asyncGet(mCookie, "http://news.10jqka.com.cn/public/index_keyboard_" + stockNum + "_0_5_jsonp.html", getCallback());
             OKHttpUtil.asyncGet(mCookie, DEBT_URL + stockNum, getCallback());
             OKHttpUtil.asyncGet(mCookie, BENEFIT_URL + stockNum, getCallback());
             OKHttpUtil.asyncGet(mCookie, CASH_URL + stockNum, getCallback());
@@ -290,7 +306,8 @@ public class MainActivity extends Activity {
                             time += 200;
                         }
                         analysisFile = FileUtil.getAnalysisFile(stockNum, stockMap.get(stockNum));
-                        String srcPath = isSelf ? "18步数据汇总工具及异常项自动计算方法增加2020年数据.xlsx" : "2020版本微淼18步数据汇总工具及异常项自动评价.xlsx";
+                        String srcPath = isSelf ? "18步数据汇总工具及异常项自动计算方法增加2020年数据.xlsx" : (isSelf01 ? "2020版本微淼18步数据汇总工具及异常项自动评价-self01.xlsx" :
+                                "2020版本微淼18步数据汇总工具及异常项自动评价.xlsx");
                         FileUtil.copy(srcPath, analysisFile, MainActivity.this);
 //                        ExcelUtil.updateExcel(analysisFile, FileUtil.getDebtFile(stockNum), FileUtil.getBenefitFile(stockNum), FileUtil.getCashFile(stockNum));
                         ExcelUtil.updateExcelByPOI(analysisFile, FileUtil.getDebtFile(stockNum), FileUtil.getBenefitFile(stockNum), FileUtil.getCashFile(stockNum));
@@ -316,6 +333,7 @@ public class MainActivity extends Activity {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onResponse(Call call, Response response) throws IOException {
+//                Log.i(TAG, "yejian response body: " + response.body().toString());
                 Log.i(TAG, "yejian response.isSuccessful: " + response.isSuccessful());
                 if (!response.isSuccessful()) {
                     runOnUiThread(new Runnable() {

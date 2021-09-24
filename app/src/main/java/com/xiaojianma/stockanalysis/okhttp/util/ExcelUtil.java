@@ -216,54 +216,54 @@ public final class ExcelUtil {
     }
 
     private static void fillCellValue(Object contents, XSSFCell curRowCell) {
-        if (contents != null) {
-            String str = contents.toString().trim();
-            if (str.isEmpty()) {
-                return;
-            }
-            curRowCell.setCellValue(str);
-        }
-//        try {
-//            if (contents != null) {
-//                String str = contents.toString().trim();
-//                if (str.isEmpty()) {
-//                    return;
-//                }
-//                if (!str.startsWith("--") && str.startsWith("-")) {
-//                    try {
-//                        if (str.contains(".")) {
-//                            curRowCell.setCellValue(Double.parseDouble(str));
-////                            curRowCell.setCellType(org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC);
-//                        } else {
-//                            curRowCell.setCellValue(Long.parseLong(str));
-////                            curRowCell.setCellType(org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC);
-//                        }
-//                        Log.e(TAG, "yejian fillCellValue getCellType: " + curRowCell.getCellType());
-//                        return;
-//                    } catch (Exception e) {
-//                        Log.e(TAG, "yejian fillCellValue error 1: " + e.toString());
-//                    }
-//                }
-//                for (char ch : str.toCharArray()) {
-//                    if (!NUMS.contains(ch + "")) {
-//                        curRowCell.setCellValue(str);
-//                        Log.e(TAG, "yejian fillCellValue getCellType: " + curRowCell.getCellType());
-//                        return;
-//                    }
-//                }
-//                if (str.contains(".")) {
-//                    curRowCell.setCellValue(Double.parseDouble(str));
-////                    curRowCell.setCellType(org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC);
-//                } else {
-//                    curRowCell.setCellValue(Long.parseLong(str));
-////                    curRowCell.setCellType(org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC);
-//                }
-//                Log.e(TAG, "yejian fillCellValue getCellType: " + curRowCell.getCellType());
+//        if (contents != null) {
+//            String str = contents.toString().trim();
+//            if (str.isEmpty()) {
+//                return;
 //            }
-//        } catch (Exception e) {
-//            Log.e(TAG, "yejian fillCellValue error 2: " + e.toString());
+//            curRowCell.setCellValue(str);
 //        }
+        try {
+            if (contents != null) {
+                String str = contents.toString().trim();
+                if (str.isEmpty()) {
+                    return;
+                }
+                if (!str.startsWith("--") && str.startsWith("-")) {
+                    try {
+                        if (str.contains(".")) {
+                            curRowCell.setCellValue(Double.parseDouble(str));
+//                            curRowCell.setCellType(org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC);
+                        } else {
+                            curRowCell.setCellValue(Long.parseLong(str));
+//                            curRowCell.setCellType(org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC);
+                        }
+                        Log.e(TAG, "yejian fillCellValue getCellType: " + curRowCell.getCellType());
+                        return;
+                    } catch (Exception e) {
+                        Log.e(TAG, "yejian fillCellValue error 1: " + e.toString());
+                    }
+                }
+                for (char ch : str.toCharArray()) {
+                    if (!NUMS.contains(ch + "")) {
+                        curRowCell.setCellValue(str);
+                        Log.e(TAG, "yejian fillCellValue getCellType: " + curRowCell.getCellType());
+                        return;
+                    }
+                }
+                if (str.contains(".")) {
+                    curRowCell.setCellValue(Double.parseDouble(str));
+//                    curRowCell.setCellType(org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC);
+                } else {
+                    curRowCell.setCellValue(Long.parseLong(str));
+//                    curRowCell.setCellType(org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC);
+                }
+                Log.e(TAG, "yejian fillCellValue getCellType: " + curRowCell.getCellType());
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "yejian fillCellValue error 2: " + e.toString());
         }
+    }
 
     private static int updateDebtData(File updateFile, WritableSheet srcSheet, int srcRows) {
         WritableCell cell;

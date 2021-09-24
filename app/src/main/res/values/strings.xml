@@ -3,6 +3,7 @@
     <string name="debt_success">%1$s下载成功</string>
     <string name="debt_fail">%1$s下载失败</string>
     <string name="eighteen_step_analysis_self">18步分析法-自研</string>
+    <string name="eighteen_step_analysis_self01">18步分析法-自研-01</string>
     <string name="eighteen_step_analysis">18步分析法-自动评价表</string>
     <string name="links">常用网址大全</string>
     <string name="eighteen_step_analysis_table">18步分析法表格</string>

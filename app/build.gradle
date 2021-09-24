@@ -8,8 +8,8 @@ android {
         applicationId "com.xiaojianma.stockanalysis"
         minSdkVersion 14
         targetSdkVersion 30
-        versionCode 7
-        versionName "7.0"
+        versionCode 8
+        versionName "8.0"
         multiDexEnabled true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

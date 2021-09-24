@@ -2,7 +2,7 @@
     <root-path name="root_path" path="./" />
 
     <!--物理路径相当于Context.getFilesDir() + /path/-->
-    <files-path name="files_paht" path="./" />
+    <files-path name="files_path" path="./" />
 
     <!--物理路径相当于Context.getCacheDir() + /path/-->
     <cache-path name="cache_path" path="./" />
