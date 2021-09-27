@@ -21,6 +21,14 @@
             android:hint="@string/stock_num_description"
             android:inputType="number"/>
 
+        <Spinner
+            android:id="@+id/spinner"
+            android:layout_marginTop="@dimen/dp_16"
+            android:layout_width="wrap_content"
+            android:textAlignment="center"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal" />
+
         <Button
             android:id="@+id/start_analysis"
             android:layout_width="wrap_content"

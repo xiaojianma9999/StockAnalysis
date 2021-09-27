@@ -208,24 +208,24 @@ public final class FileUtil {
         return storageDir + File.separator + "weimiao_learn" + File.separator + stockNum;
     }
 
-    public static File getAnalysisFile(String stockNum, String... childName) {
+    public static File getAnalysisFile(String stockNum, String type, String... childName) {
         String basePath = getBasePath(stockNum);
         if (childName != null && childName.length > 0) {
-            return new File(basePath + File.separator + stockNum + "_" + childName[0] + "_18步分析.xlsx");
+            return new File(basePath + File.separator + stockNum + "_" + childName[0] + "_18步分析_" + type + ".xlsx");
         }
-        return new File(basePath + File.separator + stockNum + "_18步分析.xls");
+        return new File(basePath + File.separator + stockNum + "_18步分析_" + type + ".xlsx");
     }
 
-    public static File getDebtFile(String stockNum) {
-        return new File(getBasePath(stockNum) + File.separator + stockNum + "_debt_year.xls");
+    public static File getDebtFile(String stockNum, boolean byYear) {
+        return new File(getBasePath(stockNum) + File.separator + stockNum + (byYear ? "_debt_year.xls" : "_debt_report.xls"));
     }
 
-    public static File getBenefitFile(String stockNum) {
-        return new File(getBasePath(stockNum) + File.separator + stockNum + "_benefit_year.xls");
+    public static File getBenefitFile(String stockNum, boolean byYear) {
+        return new File(getBasePath(stockNum) + File.separator + stockNum + (byYear ? "_benefit_year.xls" : "_benefit_report.xls"));
     }
 
-    public static File getCashFile(String stockNum) {
-        return new File(getBasePath(stockNum) + File.separator + stockNum + "_cash_year.xls");
+    public static File getCashFile(String stockNum, boolean byYear) {
+        return new File(getBasePath(stockNum) + File.separator + stockNum + (byYear ? "_cash_year.xls" : "_cash_report.xls"));
     }
 
     public static void copy(String srcfilePath, File analysisFile, Context context) {

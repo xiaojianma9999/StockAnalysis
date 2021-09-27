@@ -24,9 +24,12 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -64,17 +67,22 @@ public class MainActivity extends Activity {
     private static final String STOCK_URL = "http://stockpage.10jqka.com.cn/";
 
     // 资产负债表url
-    private static final String DEBT_URL = "http://basic.10jqka.com.cn/api/stock/export.php?export=debt&type=year&code=";
+    private static final String DEBT_URL = "http://basic.10jqka.com.cn/api/stock/export.php?export=debt&code=";
 
     // 利润表url
-    private static final String BENEFIT_URL = "http://basic.10jqka.com.cn/api/stock/export.php?export=benefit&type=year&code=";
+    private static final String BENEFIT_URL = "http://basic.10jqka.com.cn/api/stock/export.php?export=benefit&code=";
 
     // 现金流量表url
-    private static final String CASH_URL = "http://basic.10jqka.com.cn/api/stock/export.php?export=cash&type=year&code=";
+    private static final String CASH_URL = "http://basic.10jqka.com.cn/api/stock/export.php?export=cash&code=";
 
     // wps应用包名
     private static final String WPS_PKG1 = "cn.wps.moffice_eng";
     private static final String WPS_PKG = "com.huawei.filemanager";
+
+    // 按年度还是报告期分析
+    private static final String[] SELECTED = {"按年度", "按报告期"};
+
+    private ArrayAdapter<String> mAdapter;
 
     private WebView mWebView;
 
@@ -115,11 +123,16 @@ public class MainActivity extends Activity {
 
     private LinearLayout indexStand;
 
+    private Spinner mSpinner;
+
     // 是否为自研
     private volatile boolean isSelf = false;
 
     // 是否为自研01
     private volatile boolean isSelf01 = false;
+
+    // 是否为按年度，默认为按年度
+    private static volatile boolean byYear = true;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -129,12 +142,43 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         eighteenSteps = findViewById(R.id.stock_analysis);
         indexStand = findViewById(R.id.index_standard);
+        mSpinner = findViewById(R.id.spinner);
+        initSpinner();
         PermissionUtil.verifyStoragePermissions(this);
         mWebView = findViewById(R.id.web_view);
         mUrlWebView = findViewById(R.id.url_web_view);
         initWebView(mWebView);
         initWebView(mUrlWebView);
         mUrlWebView.setWebViewClient(new WebViewClient());
+    }
+
+    private void initSpinner() {
+        //将可选内容与ArrayAdapter连接起来
+        mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, SELECTED);
+
+        //设置下拉列表的风格
+        mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        //将adapter 添加到spinner中
+        mSpinner.setAdapter(mAdapter);
+
+        //添加事件Spinner事件监听
+        mSpinner.setOnItemSelectedListener(new SpinnerSelectedListener());
+
+        //设置默认值
+        mSpinner.setVisibility(View.VISIBLE);
+    }
+
+    private static class SpinnerSelectedListener implements AdapterView.OnItemSelectedListener {
+
+        public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2,
+                                   long arg3) {
+            byYear = arg2 == 0;
+        }
+
+        public void onNothingSelected(AdapterView<?> arg0) {
+            byYear = true;
+        }
     }
 
     @Override
@@ -288,9 +332,10 @@ public class MainActivity extends Activity {
             boolean delete = FileUtil.hasAnalysisAndDelete(stockNum);
             Log.i(TAG, "yejian downloadThreeTable delete " + stockNum + " dir " + delete);
 //            OKHttpUtil.asyncGet(mCookie, "http://news.10jqka.com.cn/public/index_keyboard_" + stockNum + "_0_5_jsonp.html", getCallback());
-            OKHttpUtil.asyncGet(mCookie, DEBT_URL + stockNum, getCallback());
-            OKHttpUtil.asyncGet(mCookie, BENEFIT_URL + stockNum, getCallback());
-            OKHttpUtil.asyncGet(mCookie, CASH_URL + stockNum, getCallback());
+            String type = byYear ? "&type=year" : "&type=report";
+            OKHttpUtil.asyncGet(mCookie, DEBT_URL + stockNum + type, getCallback());
+            OKHttpUtil.asyncGet(mCookie, BENEFIT_URL + stockNum + type, getCallback());
+            OKHttpUtil.asyncGet(mCookie, CASH_URL + stockNum + type, getCallback());
 
             TaskUtil.execute(new Runnable() {
                 @Override
@@ -305,12 +350,14 @@ public class MainActivity extends Activity {
                             Thread.sleep(200);
                             time += 200;
                         }
-                        analysisFile = FileUtil.getAnalysisFile(stockNum, stockMap.get(stockNum));
-                        String srcPath = isSelf ? "18步数据汇总工具及异常项自动计算方法增加2020年数据.xlsx" : (isSelf01 ? "2020版本微淼18步数据汇总工具及异常项自动评价-self01.xlsx" :
-                                "2020版本微淼18步数据汇总工具及异常项自动评价.xlsx");
+                        String type = byYear ? "year" : "report";
+                        analysisFile = FileUtil.getAnalysisFile(stockNum, type, stockMap.get(stockNum));
+                        String suffixes = byYear ? ".xlsx" : "-report.xlsx";
+                        String srcPath = isSelf ? "18步数据汇总工具及异常项自动计算方法增加2020年数据" + suffixes : (isSelf01 ? "2020版本微淼18步数据汇总工具及异常项自动评价-self01" + suffixes :
+                                "2020版本微淼18步数据汇总工具及异常项自动评价" + suffixes);
                         FileUtil.copy(srcPath, analysisFile, MainActivity.this);
 //                        ExcelUtil.updateExcel(analysisFile, FileUtil.getDebtFile(stockNum), FileUtil.getBenefitFile(stockNum), FileUtil.getCashFile(stockNum));
-                        ExcelUtil.updateExcelByPOI(analysisFile, FileUtil.getDebtFile(stockNum), FileUtil.getBenefitFile(stockNum), FileUtil.getCashFile(stockNum));
+                        ExcelUtil.updateExcelByPOI(analysisFile, FileUtil.getDebtFile(stockNum, byYear), FileUtil.getBenefitFile(stockNum, byYear), FileUtil.getCashFile(stockNum, byYear));
                         handler.obtainMessage().sendToTarget();
                     } catch (InterruptedException e) {
                         Log.e(TAG, "yejian await read excel exception: " + e.toString());
