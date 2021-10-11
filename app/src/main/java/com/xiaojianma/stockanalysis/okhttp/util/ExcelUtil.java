@@ -146,6 +146,7 @@ public final class ExcelUtil {
             //创建工作簿
             FileInputStream fileInputStream = new FileInputStream(file);
             XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
+            fileInputStream.close();
             //读取第一个工作表(这里的下标与list一样的，从0开始取，之后的也是如此)
             XSSFSheet sheet = workbook.getSheetAt(1);
             int rowNum = 1;
@@ -155,7 +156,8 @@ public final class ExcelUtil {
             rowNum = fillDebtDate(benefitFile, sheet, rowNum);
             fillDebtDate(cashFile, sheet, rowNum);
 //            refreshFormula(workbook);
-            fileInputStream.close();
+            refreshFormula(workbook, 2);
+            refreshFormula(workbook, 3);
             try (FileOutputStream outputStream = new FileOutputStream(file)) {
                 workbook.write(outputStream);
                 outputStream.flush();
@@ -168,18 +170,18 @@ public final class ExcelUtil {
     /**
      * 刷新公式
      */
-    private static void refreshFormula(XSSFWorkbook workbook) {
+    private static void refreshFormula(XSSFWorkbook workbook, int sheetIndex) {
         try {
-            XSSFSheet sheet = workbook.getSheetAt(2);
+            XSSFSheet sheet = workbook.getSheetAt(sheetIndex);
             int lastRowNum = sheet.getLastRowNum();
-            for (int i = 0; i < lastRowNum; i++) {
+            for (int i = 0; i <= lastRowNum; i++) {
                 XSSFRow row = sheet.getRow(i);
                 if (row == null) {
                     continue;
                 }
-                for (int j = 0; j < row.getLastCellNum(); j++) {
+                for (int j = 0; j <= row.getLastCellNum(); j++) {
                     XSSFCell cell = row.getCell(j);
-                    if (cell != null && cell.getCellType() == org.apache.poi.ss.usermodel.Cell.CELL_TYPE_FORMULA) {
+                    if (cell != null) {
                         cell.setCellFormula(cell.getCellFormula());
                     }
                 }
@@ -229,35 +231,47 @@ public final class ExcelUtil {
                 if (str.isEmpty()) {
                     return;
                 }
-                if (!str.startsWith("--") && str.startsWith("-")) {
-                    try {
-                        if (str.contains(".")) {
-                            curRowCell.setCellValue(Double.parseDouble(str));
-//                            curRowCell.setCellType(org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC);
-                        } else {
-                            curRowCell.setCellValue(Long.parseLong(str));
-//                            curRowCell.setCellType(org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC);
-                        }
-                        Log.e(TAG, "yejian fillCellValue getCellType: " + curRowCell.getCellType());
-                        return;
-                    } catch (Exception e) {
-                        Log.e(TAG, "yejian fillCellValue error 1: " + e.toString());
-                    }
+                try {
+//                    if (!str.contains(".")) {
+//                        curRowCell.setCellValue(Double.valueOf(str + ".00"));
+//                    } else {
+//                        curRowCell.setCellValue(Double.valueOf(str).doubleValue());
+//                    }
+                    curRowCell.setCellValue(Double.valueOf(str).doubleValue());
+                } catch (Exception e) {
+                    Log.e(TAG, "yejian fillCellValue parseDouble error: " + e.toString());
+                    curRowCell.setCellValue(str);
                 }
-                for (char ch : str.toCharArray()) {
-                    if (!NUMS.contains(ch + "")) {
-                        curRowCell.setCellValue(str);
-                        Log.e(TAG, "yejian fillCellValue getCellType: " + curRowCell.getCellType());
-                        return;
-                    }
-                }
-                if (str.contains(".")) {
-                    curRowCell.setCellValue(Double.parseDouble(str));
-//                    curRowCell.setCellType(org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC);
-                } else {
-                    curRowCell.setCellValue(Long.parseLong(str));
-//                    curRowCell.setCellType(org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC);
-                }
+
+//                if (!str.startsWith("--") && str.startsWith("-")) {
+//                    try {
+//                        if (str.contains(".")) {
+//                            curRowCell.setCellValue(Double.parseDouble(str));
+////                            curRowCell.setCellType(org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC);
+//                        } else {
+//                            curRowCell.setCellValue(Long.parseLong(str));
+////                            curRowCell.setCellType(org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC);
+//                        }
+//                        Log.e(TAG, "yejian fillCellValue getCellType: " + curRowCell.getCellType());
+//                        return;
+//                    } catch (Exception e) {
+//                        Log.e(TAG, "yejian fillCellValue error 1: " + e.toString());
+//                    }
+//                }
+//                for (char ch : str.toCharArray()) {
+//                    if (!NUMS.contains(ch + "")) {
+//                        curRowCell.setCellValue(str);
+//                        Log.e(TAG, "yejian fillCellValue getCellType: " + curRowCell.getCellType());
+//                        return;
+//                    }
+//                }
+//                if (str.contains(".")) {
+//                    curRowCell.setCellValue(Double.parseDouble(str));
+////                    curRowCell.setCellType(org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC);
+//                } else {
+//                    curRowCell.setCellValue(Long.parseLong(str));
+////                    curRowCell.setCellType(org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC);
+//                }
                 Log.e(TAG, "yejian fillCellValue getCellType: " + curRowCell.getCellType());
             }
         } catch (Exception e) {
