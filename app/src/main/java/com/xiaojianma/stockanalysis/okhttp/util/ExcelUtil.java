@@ -148,16 +148,25 @@ public final class ExcelUtil {
             XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
             fileInputStream.close();
             //读取第一个工作表(这里的下标与list一样的，从0开始取，之后的也是如此)
-            XSSFSheet sheet = workbook.getSheetAt(1);
-            int rowNum = 1;
+            XSSFSheet sheet = workbook.getSheetAt(workbook.getSheetIndex("报表汇总"));
+            int rowNum = 0;
             //获取第一行的数据
             XSSFRow row = sheet.getRow(0);
             rowNum = fillDebtDate(debtFile, sheet, rowNum);
             rowNum = fillDebtDate(benefitFile, sheet, rowNum);
             fillDebtDate(cashFile, sheet, rowNum);
-//            refreshFormula(workbook);
+            try (FileOutputStream outputStream = new FileOutputStream(file)) {
+                workbook.write(outputStream);
+                outputStream.flush();
+            }
+            fileInputStream = new FileInputStream(file);
+            workbook = new XSSFWorkbook(fileInputStream);
+            fileInputStream.close();
+            refreshFormula(workbook, 1);
             refreshFormula(workbook, 2);
             refreshFormula(workbook, 3);
+            refreshFormula(workbook, 4);
+            refreshFormula(workbook, 5);
             try (FileOutputStream outputStream = new FileOutputStream(file)) {
                 workbook.write(outputStream);
                 outputStream.flush();
@@ -199,7 +208,7 @@ public final class ExcelUtil {
             Log.e(TAG, "yejian updateDebtData exception: " + e.toString() + ", file is: " + updateFile.getAbsolutePath());
         }
         Sheet sheet = debtBook.getSheet(0);
-        for (int row = 0; row < sheet.getRows(); row++) {
+        for (int row = 1; row < sheet.getRows(); row++) {
             for (int col = 0; col < sheet.getColumns(); col++) {
                 Object contents = sheet.getCell(col, row).getContents().trim();
                 XSSFRow curRow = updateSheet.getRow(rowNum);
@@ -237,7 +246,9 @@ public final class ExcelUtil {
 //                    } else {
 //                        curRowCell.setCellValue(Double.valueOf(str).doubleValue());
 //                    }
-                    curRowCell.setCellValue(Double.valueOf(str).doubleValue());
+                    double value = Double.parseDouble(str);
+                    curRowCell.setCellValue(value);
+                    Log.e(TAG, "yejian fillCellValue parseDouble value: " + value);
                 } catch (Exception e) {
                     Log.e(TAG, "yejian fillCellValue parseDouble error: " + e.toString());
                     curRowCell.setCellValue(str);

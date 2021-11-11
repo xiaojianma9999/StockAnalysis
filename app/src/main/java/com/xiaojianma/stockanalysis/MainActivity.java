@@ -354,7 +354,7 @@ public class MainActivity extends Activity {
                         analysisFile = FileUtil.getAnalysisFile(stockNum, type, stockMap.get(stockNum));
                         String suffixes = byYear ? ".xlsx" : "-report.xlsx";
                         String srcPath = isSelf ? "18步数据汇总工具及异常项自动计算方法增加2020年数据" + suffixes : (isSelf01 ? "2020版本微淼18步数据汇总工具及异常项自动评价-self01" + suffixes :
-                                "2020版本微淼18步数据汇总工具及异常项自动评价" + suffixes);
+                                "18步数据分析表格.xlsx");
                         FileUtil.copy(srcPath, analysisFile, MainActivity.this);
 //                        ExcelUtil.updateExcel(analysisFile, FileUtil.getDebtFile(stockNum), FileUtil.getBenefitFile(stockNum), FileUtil.getCashFile(stockNum));
                         ExcelUtil.updateExcelByPOI(analysisFile, FileUtil.getDebtFile(stockNum, byYear), FileUtil.getBenefitFile(stockNum, byYear), FileUtil.getCashFile(stockNum, byYear));
