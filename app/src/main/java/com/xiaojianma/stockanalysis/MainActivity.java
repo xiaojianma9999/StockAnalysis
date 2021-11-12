@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -178,6 +179,16 @@ public class MainActivity extends Activity {
 
         public void onNothingSelected(AdapterView<?> arg0) {
             byYear = true;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults != null && grantResults.length >= 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED && requestCode == PermissionUtil.REQUEST_EXTERNAL_STORAGE) {
+            Toast.makeText(this, "获取存储权限成功！！！", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "获取存储权限失败！！！", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -377,7 +388,6 @@ public class MainActivity extends Activity {
                 Log.e(TAG, "yejian asyncGet onFailure: " + e.toString());
             }
 
-            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onResponse(Call call, Response response) throws IOException {
 //                Log.i(TAG, "yejian response body: " + response.body().toString());
@@ -397,8 +407,28 @@ public class MainActivity extends Activity {
                 File dir = new File(storageDir + File.separator + "weimiao_learn" + File.separator + stockNum);
                 // 如果目录不存在则创建目录
                 if (!dir.exists()) {
-                    boolean mkdirs = dir.mkdirs();
-                    Log.i(TAG, "yejian mkdirs dir weimiao_learn: " + mkdirs);
+                    int count = 0;
+                    while (!dir.mkdirs() && count < 5) {
+                        Log.i(TAG, "yejian mkdirs dir weimiao_learn: " + false);
+                        PermissionUtil.verifyStoragePermissions(MainActivity.this);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(MainActivity.this, "目录：" + dir + "创建失败", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(MainActivity.this, "目录：" + dir + "创建失败, 等待申请权限异常：" + e.toString(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                        count++;
+                    }
                 }
                 String disposition = response.header("Content-Disposition");
                 Log.i(TAG, "yejian disposition: " + disposition);
