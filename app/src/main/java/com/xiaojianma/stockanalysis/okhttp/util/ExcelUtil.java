@@ -155,13 +155,7 @@ public final class ExcelUtil {
             rowNum = fillDebtDate(debtFile, sheet, rowNum);
             rowNum = fillDebtDate(benefitFile, sheet, rowNum);
             fillDebtDate(cashFile, sheet, rowNum);
-            try (FileOutputStream outputStream = new FileOutputStream(file)) {
-                workbook.write(outputStream);
-                outputStream.flush();
-            }
-            fileInputStream = new FileInputStream(file);
-            workbook = new XSSFWorkbook(fileInputStream);
-            fileInputStream.close();
+            refreshFormula(workbook, 0);
             refreshFormula(workbook, 1);
             refreshFormula(workbook, 2);
             refreshFormula(workbook, 3);
